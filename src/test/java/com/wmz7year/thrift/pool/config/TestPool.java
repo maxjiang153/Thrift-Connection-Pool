@@ -33,7 +33,7 @@ public class TestPool extends TestCase {
 		config.setConnectTimeout(3000);
 		config.setThriftProtocol(TProtocolType.BINARY);
 		config.setClientClass(Example.Client.class);
-		config.addThriftServer("127.0.0.1", 9999);
+		config.addThriftServer("127.0.0.1", 9119);
 		config.setMaxConnectionPerServer(2);
 		config.setLazyInit(false);
 

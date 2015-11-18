@@ -38,6 +38,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.wmz7year.thrift.pool.config.ThriftConnectionPoolConfig;
 import com.wmz7year.thrift.pool.config.ThriftConnectionPoolConfig.ServiceOrder;
 import com.wmz7year.thrift.pool.config.ThriftServerInfo;
+import com.wmz7year.thrift.pool.connection.DefaultThriftConnection;
 import com.wmz7year.thrift.pool.connection.ThriftConnection;
 import com.wmz7year.thrift.pool.exception.ThriftConnectionPoolException;
 
@@ -232,8 +233,9 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 	 */
 	private ThriftConnection<T> obtainRawInternalConnection(ThriftServerInfo serverInfo)
 			throws ThriftConnectionPoolException {
-		// TODO get connection
-		return null;
+		ThriftConnection<T> connection = new DefaultThriftConnection<T>(serverInfo.getHost(), serverInfo.getPort(),
+				this.connectionTimeOut, this.config.getThriftProtocol(), this.config.getClientClass());
+		return connection;
 	}
 
 	/*
