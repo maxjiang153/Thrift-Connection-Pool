@@ -485,9 +485,15 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 	 * 
 	 * @param connectionHandle
 	 *            连接代理对象
+	 * @throws ThriftConnectionPoolException
+	 *             回收连接过程出现错误时抛出该异常
 	 */
-	private void putConnectionBackInPartition(ThriftConnectionHandle<T> connectionHandle) {
-		// TODO
+	protected void putConnectionBackInPartition(ThriftConnectionHandle<T> connectionHandle)
+			throws ThriftConnectionPoolException {
+		BlockingQueue<ThriftConnectionHandle<T>> queue = connectionHandle.getConnectionPartition().getFreeConnections();
+		if (!queue.offer(connectionHandle)) { // 如果无法放回则关闭
+			connectionHandle.internalClose();
+		}
 	}
 
 	/**

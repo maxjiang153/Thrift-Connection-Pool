@@ -230,8 +230,8 @@ public class ThriftConnectionPartition<T extends TServiceClient> implements Seri
 	 * 
 	 * @return 连接代理对象
 	 */
-	protected ThriftConnection<T> poolFreeConnection() {
-		ThriftConnection<T> result = this.freeConnections.poll();
+	protected ThriftConnectionHandle<T> poolFreeConnection() {
+		ThriftConnectionHandle<T> result = this.freeConnections.poll();
 		return result;
 	}
 

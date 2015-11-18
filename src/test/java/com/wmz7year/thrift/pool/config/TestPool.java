@@ -17,6 +17,7 @@
 package com.wmz7year.thrift.pool.config;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.thrift.TException;
 
@@ -36,16 +37,20 @@ public class TestPool extends TestCase {
 		config.addThriftServer("127.0.0.1", 9119);
 		config.setMaxConnectionPerServer(2);
 		config.setMinConnectionPerServer(1);
+		config.setIdleMaxAge(2, TimeUnit.SECONDS);
+		config.setMaxConnectionAge(2);
 		config.setLazyInit(false);
 
 		try {
 			ThriftConnectionPool<Example.Client> pool = new ThriftConnectionPool<Example.Client>(config);
 			Example.Client client = pool.getConnection().getClient();
 			client.ping();
-		//	pool.close();
+			pool.close();
 		} catch (ThriftConnectionPoolException e) {
 			e.printStackTrace();
 		} catch (TException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}

@@ -38,6 +38,9 @@ public class ThriftConnectionTesterThread<T extends TServiceClient> implements R
 		// TODO Auto-generated constructor stub
 	}
 
+	/*
+	 * @see java.lang.Runnable#run()
+	 */
 	@Override
 	public void run() {
 		System.out.println("ThriftConnectionTesterThread");

@@ -325,4 +325,13 @@ public class ThriftConnectionHandle<T extends TServiceClient> implements ThriftC
 		this.threadUsingConnection = Thread.currentThread();
 	}
 
+	/**
+	 * 获取连接的创建时间
+	 * 
+	 * @return 连接的创建时间
+	 */
+	public long getConnectionCreationTimeInMs() {
+		return this.connectionCreationTimeInMs;
+	}
+
 }
