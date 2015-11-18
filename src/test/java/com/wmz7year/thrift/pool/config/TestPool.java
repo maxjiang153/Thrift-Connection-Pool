@@ -42,12 +42,10 @@ public class TestPool extends TestCase {
 			ThriftConnectionPool<Example.Client> pool = new ThriftConnectionPool<Example.Client>(config);
 			Example.Client client = pool.getConnection().getClient();
 			client.ping();
-			pool.close();
+		//	pool.close();
 		} catch (ThriftConnectionPoolException e) {
 			e.printStackTrace();
 		} catch (TException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}

@@ -115,6 +115,11 @@ public class ThriftConnectionPoolConfig {
 	 */
 	private long connectionTimeoutInMs = 0;
 
+	/**
+	 * 每批连接创建的数量
+	 */
+	private int acquireIncrement = 2;
+
 	public TProtocolType getThriftProtocol() {
 		return thriftProtocol;
 	}
@@ -284,6 +289,14 @@ public class ThriftConnectionPoolConfig {
 
 	public void setConnectionTimeout(long connectionTimeout, TimeUnit timeUnit) {
 		this.connectionTimeoutInMs = TimeUnit.MILLISECONDS.convert(connectionTimeout, timeUnit);
+	}
+
+	public int getAcquireIncrement() {
+		return acquireIncrement;
+	}
+
+	public void setAcquireIncrement(int acquireIncrement) {
+		this.acquireIncrement = acquireIncrement;
 	}
 
 	/**

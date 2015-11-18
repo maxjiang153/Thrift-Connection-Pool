@@ -73,6 +73,14 @@ public class ThriftConnectionPartition<T extends TServiceClient> implements Seri
 	 */
 	private final int maxConnections;
 	/**
+	 * 分区支持的最小连接数
+	 */
+	private final int minConnections;
+	/**
+	 * 每批连接创建的数量
+	 */
+	private final int acquireIncrement;
+	/**
 	 * 连接检测操作信号处理队列
 	 */
 	private BlockingQueue<Object> poolWatchThreadSignalQueue = new ArrayBlockingQueue<Object>(1);
@@ -87,6 +95,8 @@ public class ThriftConnectionPartition<T extends TServiceClient> implements Seri
 		ThriftConnectionPoolConfig config = thriftConnectionPool.getConfig();
 		this.thriftServerInfo = thriftServerInfo;
 		this.maxConnections = config.getMaxConnectionPerServer();
+		this.minConnections = config.getMinConnectionPerServer();
+		this.acquireIncrement = config.getAcquireIncrement();
 	}
 
 	/**
@@ -198,6 +208,15 @@ public class ThriftConnectionPartition<T extends TServiceClient> implements Seri
 	}
 
 	/**
+	 * 获取连接分区最小的连接数的方法
+	 * 
+	 * @return 连接分区最小的连接数
+	 */
+	public int getMinConnections() {
+		return this.minConnections;
+	}
+
+	/**
 	 * 获取连接池检测信号队列的方法
 	 * 
 	 * @return 检测信号队列
@@ -228,6 +247,29 @@ public class ThriftConnectionPartition<T extends TServiceClient> implements Seri
 	 */
 	public BlockingQueue<ThriftConnectionHandle<T>> getFreeConnections() {
 		return this.freeConnections;
+	}
+
+	/**
+	 * 获取创建的连接数量的方法
+	 * 
+	 * @return 分区创建的连接数
+	 */
+	public int getCreatedConnections() {
+		try {
+			this.statsLock.readLock().lock();
+			return this.createdConnections;
+		} finally {
+			this.statsLock.readLock().unlock();
+		}
+	}
+
+	/**
+	 * 获取每批次连接创建数量的方法
+	 * 
+	 * @return 每批连接创建数量
+	 */
+	protected int getAcquireIncrement() {
+		return this.acquireIncrement;
 	}
 
 }
