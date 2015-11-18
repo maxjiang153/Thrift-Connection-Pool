@@ -17,6 +17,16 @@
 		</developer>
 	</developers>
 
+	<scm>
+		<connection>
+         scm:git:https://github.com/wmz7year/Thrift-Connection-Pool.git
+     	 </connection>
+		<developerConnection>
+         scm:git:https://github.com/wmz7year/Thrift-Connection-Pool.git
+     	</developerConnection>
+		<url>https://github.com/wmz7year/Thrift-Connection-Pool/</url>
+	</scm>
+
 	<licenses>
 		<license>
 			<name>The Apache License, Version 2.0</name>
