@@ -8,7 +8,14 @@
 	<packaging>jar</packaging>
 
 	<name>ThriftConnectionPool</name>
-	<url>http://maven.apache.org</url>
+	<url>https://github.com/wmz7year/Thrift-Connection-Pool/</url>
+
+	<developers>
+		<developer>
+			<name>Jiang wei</name>
+			<email>ydswcy513@gmail.com</email>
+		</developer>
+	</developers>
 
 	<properties>
 		<!-- project settings -->
@@ -17,10 +24,36 @@
 		<maven.compiler.source>1.7</maven.compiler.source>
 		<maven.compiler.target>1.7</maven.compiler.target>
 		<!-- dependency versions -->
+		<thrift.version>0.9.3</thrift.version>
 		<junit.version>3.8.1</junit.version>
+		<log4j.version>1.2.17</log4j.version>
+		<slf4j.version>1.7.12</slf4j.version>
 	</properties>
 
 	<dependencies>
+		<dependency>
+			<groupId>org.apache.thrift</groupId>
+			<artifactId>libthrift</artifactId>
+			<version>${thrift.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>${log4j.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4j.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>${slf4j.version}</version>
+			<scope>compile</scope>
+		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
