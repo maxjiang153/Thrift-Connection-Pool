@@ -119,27 +119,24 @@ public class ThriftConnectionPoolConfig {
 		return thriftProtocol;
 	}
 
-	public ThriftConnectionPoolConfig setThriftProtocol(TProtocolType thriftProtocol) {
+	public void setThriftProtocol(TProtocolType thriftProtocol) {
 		this.thriftProtocol = thriftProtocol;
-		return this;
 	}
 
 	public int getConnectTimeout() {
 		return connectTimeout;
 	}
 
-	public ThriftConnectionPoolConfig setConnectTimeout(int connectTimeout) {
+	public void setConnectTimeout(int connectTimeout) {
 		this.connectTimeout = connectTimeout;
-		return this;
 	}
 
 	public Class<? extends TServiceClient> getClientClass() {
 		return clientClass;
 	}
 
-	public ThriftConnectionPoolConfig setClientClass(Class<? extends TServiceClient> clientClass) {
+	public void setClientClass(Class<? extends TServiceClient> clientClass) {
 		this.clientClass = clientClass;
-		return this;
 	}
 
 	/**
@@ -150,9 +147,8 @@ public class ThriftConnectionPoolConfig {
 	 * @param port
 	 *            服务器端口
 	 */
-	public ThriftConnectionPoolConfig addThriftServer(String host, int port) {
+	public void addThriftServer(String host, int port) {
 		addThriftServer(new ThriftServerInfo(host, port));
-		return this;
 	}
 
 	/**
@@ -161,9 +157,8 @@ public class ThriftConnectionPoolConfig {
 	 * @param serverInfo
 	 *            服务器信息对象
 	 */
-	public ThriftConnectionPoolConfig addThriftServer(ThriftServerInfo serverInfo) {
+	public void addThriftServer(ThriftServerInfo serverInfo) {
 		thriftServers.add(serverInfo);
-		return this;
 	}
 
 	/**
@@ -181,65 +176,57 @@ public class ThriftConnectionPoolConfig {
 		return lazyInit;
 	}
 
-	public ThriftConnectionPoolConfig setLazyInit(boolean lazyInit) {
+	public void setLazyInit(boolean lazyInit) {
 		this.lazyInit = lazyInit;
-		return this;
 	}
 
 	public String getPoolName() {
 		return poolName;
 	}
 
-	public ThriftConnectionPoolConfig setPoolName(String poolName) {
+	public void setPoolName(String poolName) {
 		this.poolName = poolName;
-		return this;
 	}
 
 	public int getMaxConnectionPerServer() {
 		return maxConnectionPerServer;
 	}
 
-	public ThriftConnectionPoolConfig setMaxConnectionPerServer(int maxConnectionPerServer) {
+	public void setMaxConnectionPerServer(int maxConnectionPerServer) {
 		this.maxConnectionPerServer = maxConnectionPerServer;
-		return this;
 	}
 
 	public int getMinConnectionPerServer() {
 		return minConnectionPerServer;
 	}
 
-	public ThriftConnectionPoolConfig setMinConnectionPerServer(int minConnectionPerServer) {
+	public void setMinConnectionPerServer(int minConnectionPerServer) {
 		this.minConnectionPerServer = minConnectionPerServer;
-		return this;
 	}
 
-	public ThriftConnectionPoolConfig setIdleConnectionTestPeriodInSeconds(long idleConnectionTestPeriod,
-			TimeUnit timeUnit) {
+	public void setIdleConnectionTestPeriodInSeconds(long idleConnectionTestPeriod, TimeUnit timeUnit) {
 		this.idleConnectionTestPeriodInSeconds = TimeUnit.SECONDS.convert(idleConnectionTestPeriod,
 				checkNotNull(timeUnit));
-		return this;
 	}
 
 	public long getIdleConnectionTestPeriod(TimeUnit timeUnit) {
 		return timeUnit.convert(this.idleConnectionTestPeriodInSeconds, TimeUnit.SECONDS);
 	}
 
-	public ThriftConnectionPoolConfig setIdleMaxAgeInSeconds(long idleMaxAge) {
-		return setIdleMaxAge(idleMaxAge, TimeUnit.SECONDS);
+	public void setIdleMaxAgeInSeconds(long idleMaxAge) {
+		setIdleMaxAge(idleMaxAge, TimeUnit.SECONDS);
 	}
 
-	public ThriftConnectionPoolConfig setIdleMaxAge(long idleMaxAge, TimeUnit timeUnit) {
+	public void setIdleMaxAge(long idleMaxAge, TimeUnit timeUnit) {
 		this.idleMaxAgeInSeconds = TimeUnit.SECONDS.convert(idleMaxAge, checkNotNull(timeUnit));
-		return this;
 	}
 
 	public long getIdleMaxAge(TimeUnit timeUnit) {
 		return timeUnit.convert(this.idleMaxAgeInSeconds, TimeUnit.SECONDS);
 	}
 
-	public ThriftConnectionPoolConfig setMaxConnectionAge(long maxConnectionAgeInSeconds) {
+	public void setMaxConnectionAge(long maxConnectionAgeInSeconds) {
 		this.maxConnectionAgeInSeconds = maxConnectionAgeInSeconds;
-		return this;
 	}
 
 	public long getMaxConnectionAge(TimeUnit timeUnit) {
@@ -254,27 +241,24 @@ public class ThriftConnectionPoolConfig {
 		return serviceOrder;
 	}
 
-	public ThriftConnectionPoolConfig setServiceOrder(ServiceOrder serviceOrder) {
+	public void setServiceOrder(ServiceOrder serviceOrder) {
 		this.serviceOrder = serviceOrder;
-		return this;
 	}
 
 	public int getAcquireRetryAttempts() {
 		return this.acquireRetryAttempts;
 	}
 
-	public ThriftConnectionPoolConfig setAcquireRetryAttempts(int acquireRetryAttempts) {
+	public void setAcquireRetryAttempts(int acquireRetryAttempts) {
 		this.acquireRetryAttempts = acquireRetryAttempts;
-		return this;
 	}
 
 	public long getAcquireRetryDelayInMs() {
 		return this.acquireRetryDelayInMs;
 	}
 
-	public ThriftConnectionPoolConfig setAcquireRetryDelay(int acquireRetryDelayInMs) {
+	public void setAcquireRetryDelay(int acquireRetryDelayInMs) {
 		this.acquireRetryDelayInMs = acquireRetryDelayInMs;
-		return this;
 	}
 
 	/**
@@ -286,22 +270,20 @@ public class ThriftConnectionPoolConfig {
 		return this.poolAvailabilityThreshold;
 	}
 
-	public ThriftConnectionPoolConfig setPoolAvailabilityThreshold(int poolAvailabilityThreshold) {
+	public void setPoolAvailabilityThreshold(int poolAvailabilityThreshold) {
 		this.poolAvailabilityThreshold = poolAvailabilityThreshold;
-		return this;
 	}
 
 	public long getConnectionTimeoutInMs() {
 		return this.connectionTimeoutInMs;
 	}
 
-	public ThriftConnectionPoolConfig setConnectionTimeoutInMs(long connectionTimeoutinMs) {
-		return setConnectionTimeout(connectionTimeoutinMs, TimeUnit.MILLISECONDS);
+	public void setConnectionTimeoutInMs(long connectionTimeoutinMs) {
+		setConnectionTimeout(connectionTimeoutinMs, TimeUnit.MILLISECONDS);
 	}
 
-	public ThriftConnectionPoolConfig setConnectionTimeout(long connectionTimeout, TimeUnit timeUnit) {
+	public void setConnectionTimeout(long connectionTimeout, TimeUnit timeUnit) {
 		this.connectionTimeoutInMs = TimeUnit.MILLISECONDS.convert(connectionTimeout, timeUnit);
-		return this;
 	}
 
 	/**
