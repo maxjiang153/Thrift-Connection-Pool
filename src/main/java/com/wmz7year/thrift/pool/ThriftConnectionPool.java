@@ -68,12 +68,12 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 	/**
 	 * 配置的服务器列表
 	 */
-	private List<ThriftServerInfo> thriftServers;
+	protected List<ThriftServerInfo> thriftServers;
 
 	/**
 	 * 服务器数量
 	 */
-	private int thriftServerCount = 0;
+	protected int thriftServerCount = 0;
 
 	/**
 	 * 用于异步方式获取连接的服务
@@ -97,7 +97,30 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 	/**
 	 * 保存分区的连接信息
 	 */
-	private List<ThriftConnectionPartition<T>> partitions;
+	protected List<ThriftConnectionPartition<T>> partitions;
+
+	/**
+	 * 判断连接池是否在关闭过程中的表识位
+	 */
+	protected volatile boolean poolShuttingDown;
+
+	/**
+	 * 当分区连接小于x%的时候触发创建连接信号
+	 */
+	protected final int poolAvailabilityThreshold;
+
+	/**
+	 * 连接获取策略处理类
+	 */
+	protected ThriftConnectionStrategy<T> connectionStrategy;
+	/**
+	 * 关闭连接池的原因
+	 */
+	protected String shutdownStackTrace;
+	/**
+	 * 连接获取超时时间
+	 */
+	protected long connectionTimeoutInMs;
 
 	/**
 	 * 构造器
@@ -166,6 +189,13 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 		this.partitions = new ArrayList<ThriftConnectionPartition<T>>(thriftServerCount);
 
 		// TODO 其他配置
+		this.poolAvailabilityThreshold = this.config.getPoolAvailabilityThreshold();
+		this.connectionStrategy = new DefaultThriftConnectionStrategy<T>(this);
+		this.connectionTimeoutInMs = this.config.getConnectionTimeoutInMs();
+
+		if (this.connectionTimeoutInMs == 0) {
+			this.connectionTimeoutInMs = Long.MAX_VALUE;
+		}
 
 		// 队列模式
 		ServiceOrder serviceOrder = this.config.getServiceOrder();
@@ -254,9 +284,8 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 	 * @throws ThriftConnectionPoolException
 	 *             当获取连接出现错误时抛出该异常
 	 */
-	public T getConnection() throws ThriftConnectionPoolException {
-		// TODO Auto-generated method stub
-		return null;
+	public ThriftConnection<T> getConnection() throws ThriftConnectionPoolException {
+		return this.connectionStrategy.getConnection();
 	}
 
 	/**
@@ -335,4 +364,130 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 		return result;
 	}
 
+	/**
+	 * 将连接返回到连接池中的方法<br>
+	 * 该方法在调用connection.close()的时候触发<br>
+	 * 但是连接并不会真正的关掉 而是清理后返回连接池中
+	 * 
+	 * @param connection
+	 *            需要回收的连接对象
+	 * @throws ThriftConnectionPoolException
+	 *             回收过程中可能产生的异常
+	 */
+	public void releaseConnection(ThriftConnection<T> connection) throws ThriftConnectionPoolException {
+		ThriftConnectionHandle<T> handle = (ThriftConnectionHandle<T>) connection;
+
+		// 判断连接池是否是在关闭中 如果不是在关闭中则执行回收操作
+		if (!this.poolShuttingDown) {
+			internalReleaseConnection(handle);
+		}
+	}
+
+	/**
+	 * 将连接代理对象回收到连接池中的方法
+	 * 
+	 * @param handle
+	 *            连接代理对象
+	 * @throws ThriftConnectionPoolException
+	 *             回收过程中可能产生的异常
+	 */
+	protected void internalReleaseConnection(ThriftConnectionHandle<T> connectionHandle)
+			throws ThriftConnectionPoolException {
+		if (connectionHandle.isExpired() || (!this.poolShuttingDown && connectionHandle.isPossiblyBroken()
+				&& !isConnectionHandleAlive(connectionHandle))) {
+
+			if (connectionHandle.isExpired()) {
+				connectionHandle.internalClose();
+			}
+
+			ThriftConnectionPartition<T> connectionPartition = connectionHandle.getConnectionPartition();
+			postDestroyConnection(connectionHandle);
+
+			maybeSignalForMoreConnections(connectionPartition);
+			return;
+		}
+		connectionHandle.setConnectionLastUsedInMs(System.currentTimeMillis());
+		if (!this.poolShuttingDown) {
+			putConnectionBackInPartition(connectionHandle);
+		} else {
+			connectionHandle.internalClose();
+		}
+	}
+
+	/**
+	 * 将连接放回对应分区的方法
+	 * 
+	 * @param connectionHandle
+	 *            连接代理对象
+	 */
+	private void putConnectionBackInPartition(ThriftConnectionHandle<T> connectionHandle) {
+		// TODO
+	}
+
+	/**
+	 * 判断连接代理类是否可用的方法
+	 * 
+	 * @param connection
+	 *            需要检测的连接代理类对象
+	 * @return true为可用 false为不可用
+	 */
+	public boolean isConnectionHandleAlive(ThriftConnectionHandle<T> connection) {
+		boolean result = false;
+		boolean logicallyClosed = connection.logicallyClosed.get();
+		try {
+			connection.logicallyClosed.compareAndSet(true, false);
+
+			// TODO 需要调可能存在的ping方法？
+
+			result = true;
+		} finally {
+			connection.logicallyClosed.set(logicallyClosed);
+			connection.setConnectionLastResetInMs(System.currentTimeMillis());
+		}
+		return result;
+	}
+
+	/**
+	 * 准备销毁连接的方法<br>
+	 * 通知连接分区准备创建新的连接
+	 * 
+	 * @param handle
+	 *            需要销毁的连接地理对象
+	 */
+	protected void postDestroyConnection(ThriftConnectionHandle<T> handle) {
+		ThriftConnectionPartition<T> partition = handle.getConnectionPartition();
+
+		partition.updateCreatedConnections(-1);
+		partition.setUnableToCreateMoreTransactions(false);
+	}
+
+	/**
+	 * 检查连接分区的连接数量<br>
+	 * 如果连接数量不足则向事件队列中添加新的创建连接信号
+	 * 
+	 * @param connectionPartition
+	 *            需要检测的连接分区
+	 */
+	protected void maybeSignalForMoreConnections(ThriftConnectionPartition<T> connectionPartition) {
+		if (!connectionPartition.isUnableToCreateMoreTransactions() && !this.poolShuttingDown
+				&& connectionPartition.getAvailableConnections() * 100
+						/ connectionPartition.getMaxConnections() <= this.poolAvailabilityThreshold) {
+			connectionPartition.getPoolWatchThreadSignalQueue().offer(new Object());
+		}
+	}
+
+	/**
+	 * 销毁连接的方法
+	 * 
+	 * @param conn
+	 *            需要销毁的连接代理对象
+	 */
+	protected void destroyConnection(ThriftConnectionHandle<T> conn) {
+		postDestroyConnection(conn);
+		try {
+			conn.internalClose();
+		} catch (ThriftConnectionPoolException e) {
+			logger.error("Error in attempting to close connection", e);
+		}
+	}
 }

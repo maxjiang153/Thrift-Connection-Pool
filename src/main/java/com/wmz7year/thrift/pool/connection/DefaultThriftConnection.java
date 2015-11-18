@@ -141,4 +141,12 @@ public class DefaultThriftConnection<T extends TServiceClient> implements Thrift
 		return client;
 	}
 
+	/*
+	 * @see com.wmz7year.thrift.pool.connection.ThriftConnection#isClosed()
+	 */
+	@Override
+	public boolean isClosed() {
+		return !transport.isOpen();
+	}
+
 }

@@ -37,4 +37,11 @@ public interface ThriftConnection<T extends TServiceClient> extends Closeable {
 	 * @return 客户端对象
 	 */
 	public T getClient();
+
+	/**
+	 * 判断连接是否关闭的表识位
+	 * 
+	 * @return true为连接已经关闭 false为连接未关闭
+	 */
+	public boolean isClosed();
 }

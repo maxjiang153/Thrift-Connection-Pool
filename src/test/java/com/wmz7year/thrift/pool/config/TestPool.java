@@ -35,11 +35,12 @@ public class TestPool extends TestCase {
 		config.setClientClass(Example.Client.class);
 		config.addThriftServer("127.0.0.1", 9119);
 		config.setMaxConnectionPerServer(2);
+		config.setMinConnectionPerServer(1);
 		config.setLazyInit(false);
 
 		try {
 			ThriftConnectionPool<Example.Client> pool = new ThriftConnectionPool<Example.Client>(config);
-			Example.Client client = pool.getConnection();
+			Example.Client client = pool.getConnection().getClient();
 			client.ping();
 			pool.close();
 		} catch (ThriftConnectionPoolException e) {

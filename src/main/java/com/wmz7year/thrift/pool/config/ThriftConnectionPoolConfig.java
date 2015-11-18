@@ -106,6 +106,14 @@ public class ThriftConnectionPoolConfig {
 	 * 队列模式
 	 */
 	private ServiceOrder serviceOrder = ServiceOrder.FIFO;
+	/**
+	 * 当需要创建连接时检查的分区连接空闲连接比例
+	 */
+	private int poolAvailabilityThreshold = 0;
+	/**
+	 * 连接获取的超时时间
+	 */
+	private long connectionTimeoutInMs = 0;
 
 	public TProtocolType getThriftProtocol() {
 		return thriftProtocol;
@@ -266,6 +274,33 @@ public class ThriftConnectionPoolConfig {
 
 	public ThriftConnectionPoolConfig setAcquireRetryDelay(int acquireRetryDelayInMs) {
 		this.acquireRetryDelayInMs = acquireRetryDelayInMs;
+		return this;
+	}
+
+	/**
+	 * 获取当分区连接小于x%的时候触发创建连接信号量
+	 * 
+	 * @return 最小分区空闲连接比例
+	 */
+	public int getPoolAvailabilityThreshold() {
+		return this.poolAvailabilityThreshold;
+	}
+
+	public ThriftConnectionPoolConfig setPoolAvailabilityThreshold(int poolAvailabilityThreshold) {
+		this.poolAvailabilityThreshold = poolAvailabilityThreshold;
+		return this;
+	}
+
+	public long getConnectionTimeoutInMs() {
+		return this.connectionTimeoutInMs;
+	}
+
+	public ThriftConnectionPoolConfig setConnectionTimeoutInMs(long connectionTimeoutinMs) {
+		return setConnectionTimeout(connectionTimeoutinMs, TimeUnit.MILLISECONDS);
+	}
+
+	public ThriftConnectionPoolConfig setConnectionTimeout(long connectionTimeout, TimeUnit timeUnit) {
+		this.connectionTimeoutInMs = TimeUnit.MILLISECONDS.convert(connectionTimeout, timeUnit);
 		return this;
 	}
 

@@ -17,15 +17,18 @@
 package com.wmz7year.thrift.pool;
 
 import java.io.Serializable;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.thrift.TServiceClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import com.wmz7year.thrift.pool.config.ThriftConnectionPoolConfig;
 import com.wmz7year.thrift.pool.config.ThriftServerInfo;
+import com.wmz7year.thrift.pool.connection.ThriftConnection;
+import com.wmz7year.thrift.pool.exception.ThriftConnectionPoolException;
 
 /**
  * 连接分区实体类<br>
@@ -39,13 +42,7 @@ import com.wmz7year.thrift.pool.config.ThriftServerInfo;
  * @version V1.0
  */
 public class ThriftConnectionPartition<T extends TServiceClient> implements Serializable {
-	private static final Logger logger = LoggerFactory.getLogger(ThriftConnectionPartition.class);
 	private static final long serialVersionUID = 1575062547601396682L;
-
-	/**
-	 * 连接池对象
-	 */
-	private ThriftConnectionPool<T> thriftConnectionPool;
 
 	/**
 	 * 空闲连接队列
@@ -62,9 +59,34 @@ public class ThriftConnectionPartition<T extends TServiceClient> implements Seri
 	 */
 	private ThriftServerInfo thriftServerInfo;
 
+	/**
+	 * 连接创建统计锁
+	 */
+	protected ReentrantReadWriteLock statsLock = new ReentrantReadWriteLock();
+
+	/**
+	 * 创建的连接数量
+	 */
+	private int createdConnections = 0;
+	/**
+	 * 分区支持的最大连接数
+	 */
+	private final int maxConnections;
+	/**
+	 * 连接检测操作信号处理队列
+	 */
+	private BlockingQueue<Object> poolWatchThreadSignalQueue = new ArrayBlockingQueue<Object>(1);
+
+	/**
+	 * true为不需要创建更多的连接 说明连接已经到了最大数量
+	 */
+	private boolean unableToCreateMoreTransactions = false;
+	protected ReentrantReadWriteLock unableToCreateMoreTransactionsLock = new ReentrantReadWriteLock();
+
 	public ThriftConnectionPartition(ThriftConnectionPool<T> thriftConnectionPool, ThriftServerInfo thriftServerInfo) {
-		this.thriftConnectionPool = thriftConnectionPool;
+		ThriftConnectionPoolConfig config = thriftConnectionPool.getConfig();
 		this.thriftServerInfo = thriftServerInfo;
+		this.maxConnections = config.getMaxConnectionPerServer();
 	}
 
 	/**
@@ -91,10 +113,37 @@ public class ThriftConnectionPartition<T extends TServiceClient> implements Seri
 	 * 
 	 * @param thriftConnectionHandle
 	 *            thrift连接代理对象
+	 * @throws ThriftConnectionPoolException
 	 */
-	public void addFreeConnection(ThriftConnectionHandle<T> thriftConnectionHandle) {
-		// TODO Auto-generated method stub
+	public void addFreeConnection(ThriftConnectionHandle<T> thriftConnectionHandle)
+			throws ThriftConnectionPoolException {
+		thriftConnectionHandle.setOriginatingPartition(this);
+		// 更新创建的连接数 创建数 +1
+		updateCreatedConnections(1);
 
+		if (!this.freeConnections.offer(thriftConnectionHandle)) {
+			// 将连接放入队列失败 创建数 - 1
+			updateCreatedConnections(-1);
+
+			// 关闭原始连接
+			thriftConnectionHandle.internalClose();
+		}
+	}
+
+	/**
+	 * 更新连接创建统计数的方法
+	 * 
+	 * @param increment
+	 *            更新数量 增加或者减少
+	 */
+	protected void updateCreatedConnections(int increment) {
+
+		try {
+			this.statsLock.writeLock().lock();
+			this.createdConnections += increment;
+		} finally {
+			this.statsLock.writeLock().unlock();
+		}
 	}
 
 	/**
@@ -105,4 +154,80 @@ public class ThriftConnectionPartition<T extends TServiceClient> implements Seri
 	public AtomicBoolean getServerIsDown() {
 		return serverIsDown;
 	}
+
+	/**
+	 * 设置连接可创建的状态
+	 * 
+	 * @param unableToCreateMoreTransactions
+	 *            true为不能继续创建连接 false为可以继续创建连接
+	 */
+	public void setUnableToCreateMoreTransactions(boolean unableToCreateMoreTransactions) {
+		try {
+			unableToCreateMoreTransactionsLock.writeLock().lock();
+			this.unableToCreateMoreTransactions = unableToCreateMoreTransactions;
+		} finally {
+			unableToCreateMoreTransactionsLock.writeLock().unlock();
+		}
+	}
+
+	/**
+	 * 获取是否能继续创建连接的方法
+	 * 
+	 * @return true为不能创建连接了 false为可以继续创建连接
+	 */
+	public boolean isUnableToCreateMoreTransactions() {
+		return this.unableToCreateMoreTransactions;
+	}
+
+	/**
+	 * 获取可用连接数量的方法
+	 * 
+	 * @return 可用连接数量
+	 */
+	public int getAvailableConnections() {
+		return this.freeConnections.size();
+	}
+
+	/**
+	 * 获取分区支持的最大连接数的方法
+	 * 
+	 * @return 分区支持的最大连接数
+	 */
+	public int getMaxConnections() {
+		return this.maxConnections;
+	}
+
+	/**
+	 * 获取连接池检测信号队列的方法
+	 * 
+	 * @return 检测信号队列
+	 */
+	public BlockingQueue<Object> getPoolWatchThreadSignalQueue() {
+		return this.poolWatchThreadSignalQueue;
+	}
+
+	/**
+	 * 直接获取一个连接的方法
+	 * 
+	 * @return 连接代理对象
+	 */
+	protected ThriftConnection<T> poolFreeConnection() {
+		ThriftConnection<T> result = this.freeConnections.poll();
+		return result;
+	}
+
+	public ThriftConnection<T> poolFreeConnection(long timeout, TimeUnit unit) throws InterruptedException {
+		ThriftConnection<T> result = this.freeConnections.poll(timeout, unit);
+		return result;
+	}
+
+	/**
+	 * 获取所有空闲连接的方法
+	 * 
+	 * @return 空闲连接队列
+	 */
+	public BlockingQueue<ThriftConnectionHandle<T>> getFreeConnections() {
+		return this.freeConnections;
+	}
+
 }
