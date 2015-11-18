@@ -84,10 +84,12 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 	 * 用于保持连接，定时执行连接上的某个方法
 	 */
 	protected ScheduledExecutorService keepAliveScheduler;
+
 	/**
 	 * 处理连接最大存活时间的定时器
 	 */
 	private ScheduledExecutorService maxAliveScheduler;
+
 	/**
 	 * 监听每个服务器上的连接<br>
 	 * 检查是需要动态创建新的连接还是关闭多余的连接
@@ -273,8 +275,56 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 	 */
 	@Override
 	public void close() throws IOException {
-		// TODO Auto-generated method stub
+		shutdown();
+	}
 
+	/**
+	 * 关闭连接池的方法
+	 */
+	public synchronized void shutdown() {
+		if (!this.poolShuttingDown) {
+			logger.info("开始关闭thrift连接池...");
+			this.poolShuttingDown = true;
+			this.shutdownStackTrace = captureStackTrace("开始关闭thrift连接池");
+			this.keepAliveScheduler.shutdownNow();
+			this.maxAliveScheduler.shutdownNow();
+			this.connectionsScheduler.shutdownNow();
+
+			this.asyncExecutor.shutdownNow();
+
+			try {
+				this.connectionsScheduler.awaitTermination(5, TimeUnit.SECONDS);
+
+				this.maxAliveScheduler.awaitTermination(5, TimeUnit.SECONDS);
+				this.keepAliveScheduler.awaitTermination(5, TimeUnit.SECONDS);
+				this.asyncExecutor.awaitTermination(5, TimeUnit.SECONDS);
+
+			} catch (InterruptedException e) {
+				// do nothing
+			}
+
+			this.connectionStrategy.terminateAllConnections();
+			logger.info("关闭thrift连接池完成");
+		}
+	}
+
+	/**
+	 * 获取方法调用堆栈信息的方法
+	 * 
+	 * @param message
+	 *            提示语
+	 * @return 堆栈信息
+	 */
+	protected String captureStackTrace(String message) {
+		StringBuilder stringBuilder = new StringBuilder(String.format(message, Thread.currentThread().getName()));
+		StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+		for (int i = 0; i < trace.length; i++) {
+			stringBuilder.append(' ').append(trace[i]).append("\r\n");
+		}
+
+		stringBuilder.append("");
+
+		return stringBuilder.toString();
 	}
 
 	/**
