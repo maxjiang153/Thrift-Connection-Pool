@@ -13,6 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
+
 package com.wmz7year.thrift.pool;
 
 import java.io.IOException;
@@ -50,6 +51,12 @@ public class ThriftConnectionHandle<T extends TServiceClient> implements ThriftC
 	public void close() throws IOException {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public T getClient() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

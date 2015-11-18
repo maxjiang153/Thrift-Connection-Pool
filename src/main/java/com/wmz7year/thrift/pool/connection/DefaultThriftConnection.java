@@ -16,25 +16,31 @@
 
 package com.wmz7year.thrift.pool.connection;
 
-import java.io.Closeable;
+import java.io.IOException;
 
 import org.apache.thrift.TServiceClient;
 
 /**
- * Thrift连接对象
+ * 默认实现的thrift客户端对象
  * 
- * @Title: ThriftConnection.java
+ * @Title: DefaultThriftConnection.java
  * @Package com.wmz7year.thrift.pool.connection
- * @author jiangwei (ydswcy513@gmail.com)
- * @date 2015年11月18日 上午11:08:06
+ * @author jiangwei (jiangwei@1318.com)
+ * @date 2015年11月18日 下午1:37:59
  * @version V1.0
  */
-public interface ThriftConnection<T extends TServiceClient> extends Closeable {
+public class DefaultThriftConnection<T extends TServiceClient> implements ThriftConnection<T> {
 
-	/**
-	 * 获取客户端的方法
-	 * 
-	 * @return 客户端对象
-	 */
-	public T getClient();
+	@Override
+	public void close() throws IOException {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public T getClient() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
