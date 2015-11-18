@@ -34,6 +34,8 @@ public class TestPool extends TestCase {
 		config.setThriftProtocol(TProtocolType.BINARY);
 		config.setClientClass(Example.Client.class);
 		config.addThriftServer("127.0.0.1", 9999);
+		config.setMaxConnectionPerServer(2);
+		config.setLazyInit(false);
 
 		try {
 			ThriftConnectionPool<Example.Client> pool = new ThriftConnectionPool<Example.Client>(config);

@@ -13,41 +13,33 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
+
 package com.wmz7year.thrift.pool;
 
-import java.io.IOException;
-import java.io.Serializable;
-
 import org.apache.thrift.TServiceClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.wmz7year.thrift.pool.connection.ThriftConnection;
+import com.wmz7year.thrift.pool.config.ThriftConnectionPoolConfig.ServiceOrder;
 
 /**
- * thrift连接代理类
+ * 连接测试线程<br>
+ * 用于测试分区中的连接可用性
  * 
- * @Title: ThriftConnectionHandle.java
+ * @Title: ThriftConnectionTesterThread.java
  * @Package com.wmz7year.thrift.pool
  * @author jiangwei (ydswcy513@gmail.com)
- * @date 2015年11月18日 上午11:40:26
+ * @date 2015年11月18日 下午1:17:20
  * @version V1.0
  */
-public class ThriftConnectionHandle<T extends TServiceClient> implements ThriftConnection<T>, Serializable {
-	protected static Logger logger = LoggerFactory.getLogger(ThriftConnectionHandle.class);
-	private static final long serialVersionUID = 8927450495285911268L;
+public class ThriftConnectionTesterThread<T extends TServiceClient> implements Runnable {
 
-	public ThriftConnectionHandle(ThriftConnection<T> thriftConnection,
-			ThriftConnectionPartition<T> thriftConnectionPartition, ThriftConnectionPool<T> thriftConnectionPool,
-			boolean recreating) {
+	public ThriftConnectionTesterThread(ThriftConnectionPartition<T> thriftConnectionPartition,
+			ThriftConnectionPool<T> thriftConnectionPool, long idleMaxAge, long idleConnectionTestPeriod,
+			ServiceOrder serviceOrder) {
 		// TODO Auto-generated constructor stub
 	}
 
-	/*
-	 * @see java.io.Closeable#close()
-	 */
 	@Override
-	public void close() throws IOException {
+	public void run() {
 		// TODO Auto-generated method stub
 
 	}

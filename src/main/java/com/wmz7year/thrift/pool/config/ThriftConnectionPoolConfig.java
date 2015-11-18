@@ -16,10 +16,13 @@
 
 package com.wmz7year.thrift.pool.config;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.thrift.TServiceClient;
 
@@ -63,6 +66,36 @@ public class ThriftConnectionPoolConfig {
 	 * 是否是懒加载连接
 	 */
 	private boolean lazyInit;
+
+	/**
+	 * 每台服务器最大的连接数
+	 */
+	private int maxConnectionPerServer = 0;
+
+	/**
+	 * 每台服务器最小连接数
+	 */
+	private int minConnectionPerServer = 0;
+
+	/**
+	 * 连接检测时间周期
+	 */
+	private long idleConnectionTestPeriodInSeconds = 10;
+
+	/**
+	 * 为使用连接关闭时间
+	 */
+	private long idleMaxAgeInSeconds = 20;
+
+	/**
+	 * 连接最大存活时间
+	 */
+	private long maxConnectionAgeInSeconds = 0;
+
+	/**
+	 * 队列模式
+	 */
+	private ServiceOrder serviceOrder = ServiceOrder.FIFO;
 
 	public TProtocolType getThriftProtocol() {
 		return thriftProtocol;
@@ -144,6 +177,69 @@ public class ThriftConnectionPoolConfig {
 		return this;
 	}
 
+	public int getMaxConnectionPerServer() {
+		return maxConnectionPerServer;
+	}
+
+	public ThriftConnectionPoolConfig setMaxConnectionPerServer(int maxConnectionPerServer) {
+		this.maxConnectionPerServer = maxConnectionPerServer;
+		return this;
+	}
+
+	public int getMinConnectionPerServer() {
+		return minConnectionPerServer;
+	}
+
+	public ThriftConnectionPoolConfig setMinConnectionPerServer(int minConnectionPerServer) {
+		this.minConnectionPerServer = minConnectionPerServer;
+		return this;
+	}
+
+	public ThriftConnectionPoolConfig setIdleConnectionTestPeriodInSeconds(long idleConnectionTestPeriod,
+			TimeUnit timeUnit) {
+		this.idleConnectionTestPeriodInSeconds = TimeUnit.SECONDS.convert(idleConnectionTestPeriod,
+				checkNotNull(timeUnit));
+		return this;
+	}
+
+	public long getIdleConnectionTestPeriod(TimeUnit timeUnit) {
+		return timeUnit.convert(this.idleConnectionTestPeriodInSeconds, TimeUnit.SECONDS);
+	}
+
+	public ThriftConnectionPoolConfig setIdleMaxAgeInSeconds(long idleMaxAge) {
+		return setIdleMaxAge(idleMaxAge, TimeUnit.SECONDS);
+	}
+
+	public ThriftConnectionPoolConfig setIdleMaxAge(long idleMaxAge, TimeUnit timeUnit) {
+		this.idleMaxAgeInSeconds = TimeUnit.SECONDS.convert(idleMaxAge, checkNotNull(timeUnit));
+		return this;
+	}
+
+	public long getIdleMaxAge(TimeUnit timeUnit) {
+		return timeUnit.convert(this.idleMaxAgeInSeconds, TimeUnit.SECONDS);
+	}
+
+	public ThriftConnectionPoolConfig setMaxConnectionAge(long maxConnectionAgeInSeconds) {
+		this.maxConnectionAgeInSeconds = maxConnectionAgeInSeconds;
+		return this;
+	}
+
+	public long getMaxConnectionAge(TimeUnit timeUnit) {
+		return timeUnit.convert(this.maxConnectionAgeInSeconds, TimeUnit.SECONDS);
+	}
+
+	public long getMaxConnectionAgeInSeconds() {
+		return this.maxConnectionAgeInSeconds;
+	}
+
+	public ServiceOrder getServiceOrder() {
+		return serviceOrder;
+	}
+
+	public void setServiceOrder(ServiceOrder serviceOrder) {
+		this.serviceOrder = serviceOrder;
+	}
+
 	/**
 	 * thrift 通讯管道类型
 	 * 
@@ -162,6 +258,20 @@ public class ThriftConnectionPoolConfig {
 		 * JSON通讯管道类型
 		 */
 		JSON
+	}
+
+	/**
+	 * 队列模式<br>
+	 * 先进先出还是先进后出
+	 * 
+	 * @Title: ThriftConnectionPoolConfig.java
+	 * @Package com.wmz7year.thrift.pool.config
+	 * @author jiangwei (ydswcy513@gmail.com)
+	 * @date 2015年11月18日 下午1:20:47
+	 * @version V1.0
+	 */
+	public enum ServiceOrder {
+		FIFO, LIFO
 	}
 
 }

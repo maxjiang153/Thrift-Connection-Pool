@@ -17,10 +17,13 @@
 package com.wmz7year.thrift.pool;
 
 import java.io.Serializable;
+import java.util.concurrent.BlockingQueue;
 
 import org.apache.thrift.TServiceClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.wmz7year.thrift.pool.config.ThriftServerInfo;
 
 /**
  * 连接分区实体类<br>
@@ -37,7 +40,44 @@ public class ThriftConnectionPartition<T extends TServiceClient> implements Seri
 	private static final Logger logger = LoggerFactory.getLogger(ThriftConnectionPartition.class);
 	private static final long serialVersionUID = 1575062547601396682L;
 
-	public ThriftConnectionPartition(ThriftConnectionPool<T> thriftConnectionPool) {
-		// TODO Auto-generated constructor stub
+	/**
+	 * 连接池对象
+	 */
+	private ThriftConnectionPool<T> thriftConnectionPool;
+
+	/**
+	 * 空闲连接队列
+	 */
+	private BlockingQueue<ThriftConnectionHandle<T>> freeConnections;
+
+	/**
+	 * 分区所绑定的服务器信息
+	 */
+	private ThriftServerInfo thriftServerInfo;
+
+	public ThriftConnectionPartition(ThriftConnectionPool<T> thriftConnectionPool, ThriftServerInfo thriftServerInfo) {
+		this.thriftConnectionPool = thriftConnectionPool;
+		this.thriftServerInfo = thriftServerInfo;
+	}
+
+	/**
+	 * 设置空闲连接队列的方法
+	 * 
+	 * @param freeConnections
+	 *            空闲连接队列
+	 */
+	protected void setFreeConnections(BlockingQueue<ThriftConnectionHandle<T>> freeConnections) {
+		this.freeConnections = freeConnections;
+	}
+
+	/**
+	 * 添加空闲连接的方法
+	 * 
+	 * @param thriftConnectionHandle
+	 *            thrift连接代理对象
+	 */
+	public void addFreeConnection(ThriftConnectionHandle<T> thriftConnectionHandle) {
+		// TODO Auto-generated method stub
+
 	}
 }
