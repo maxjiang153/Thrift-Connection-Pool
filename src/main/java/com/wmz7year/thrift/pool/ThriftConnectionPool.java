@@ -27,6 +27,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.thrift.TServiceClient;
 import org.slf4j.Logger;
@@ -226,8 +227,11 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 	 * @param serverInfo
 	 *            thrift服务器信息
 	 * @return thrift客户端连接对象
+	 * @throws ThriftConnectionPoolException
+	 *             当获取连接出现问题时抛出该异常
 	 */
-	private ThriftConnection<T> obtainRawInternalConnection(ThriftServerInfo serverInfo) {
+	private ThriftConnection<T> obtainRawInternalConnection(ThriftServerInfo serverInfo)
+			throws ThriftConnectionPoolException {
 		// TODO get connection
 		return null;
 	}
@@ -251,6 +255,82 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 	public T getConnection() throws ThriftConnectionPoolException {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	/**
+	 * 获取连接池配置对象的方法
+	 * 
+	 * @return 连接池配置对象
+	 */
+	public ThriftConnectionPoolConfig getConfig() {
+		return this.config;
+	}
+
+	/**
+	 * 获取一个thrift原始连接对象的方法
+	 * 
+	 * @param thriftConnectionHandle
+	 * @return
+	 * @throws ThriftConnectionPoolException
+	 */
+	public ThriftConnection<T> obtainInternalConnection(ThriftConnectionHandle<T> thriftConnectionHandle)
+			throws ThriftConnectionPoolException {
+		boolean tryAgain = false;
+		ThriftConnection<T> result = null;
+		ThriftConnection<T> oldRawConnection = thriftConnectionHandle.getInternalConnection();
+		ThriftServerInfo thriftServerInfo = thriftConnectionHandle.getThriftServerInfo();
+
+		int acquireRetryAttempts = this.getConfig().getAcquireRetryAttempts();
+		long acquireRetryDelayInMs = this.getConfig().getAcquireRetryDelayInMs();
+		AcquireFailConfig acquireConfig = new AcquireFailConfig();
+		acquireConfig.setAcquireRetryAttempts(new AtomicInteger(acquireRetryAttempts));
+		acquireConfig.setAcquireRetryDelayInMs(acquireRetryDelayInMs);
+		acquireConfig.setLogMessage("Failed to acquire connection to " + thriftServerInfo.toString());
+
+		do {
+			result = null;
+
+			try {
+				// 尝试获取原始连接
+				result = this.obtainRawInternalConnection(thriftServerInfo);
+				tryAgain = false;
+
+				if (acquireRetryAttempts != this.getConfig().getAcquireRetryAttempts()) {
+					logger.info("Successfully re-established connection to " + thriftServerInfo.toString());
+				}
+
+				thriftConnectionHandle.getConnectionPartition().getServerIsDown().set(false);
+
+				thriftConnectionHandle.setInternalConnection(result);
+
+			} catch (ThriftConnectionPoolException e) {
+				logger.error(String.format("Failed to acquire connection to %s. Sleeping for %d ms. Attempts left: %d",
+						thriftServerInfo.toString(), acquireRetryDelayInMs, acquireRetryAttempts), e);
+
+				try {
+					if (acquireRetryAttempts > 0) {
+						Thread.sleep(acquireRetryDelayInMs);
+					}
+					tryAgain = (acquireRetryAttempts--) > 0;
+				} catch (InterruptedException e1) {
+					tryAgain = false;
+				}
+
+				if (!tryAgain) {
+					if (oldRawConnection != null) {
+						try {
+							oldRawConnection.close();
+						} catch (IOException e1) {
+							throw new ThriftConnectionPoolException(e1);
+						}
+					}
+					thriftConnectionHandle.setInternalConnection(oldRawConnection);
+					throw e;
+				}
+
+			}
+		} while (tryAgain);
+		return result;
 	}
 
 }

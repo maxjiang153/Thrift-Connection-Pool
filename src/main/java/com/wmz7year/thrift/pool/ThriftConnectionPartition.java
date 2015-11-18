@@ -18,6 +18,8 @@ package com.wmz7year.thrift.pool;
 
 import java.io.Serializable;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.thrift.TServiceClient;
 import org.slf4j.Logger;
@@ -51,6 +53,11 @@ public class ThriftConnectionPartition<T extends TServiceClient> implements Seri
 	private BlockingQueue<ThriftConnectionHandle<T>> freeConnections;
 
 	/**
+	 * thrift服务器是否关闭的表识位
+	 */
+	private AtomicBoolean serverIsDown = new AtomicBoolean();
+
+	/**
 	 * 分区所绑定的服务器信息
 	 */
 	private ThriftServerInfo thriftServerInfo;
@@ -71,6 +78,15 @@ public class ThriftConnectionPartition<T extends TServiceClient> implements Seri
 	}
 
 	/**
+	 * 获取分区所对应的thrift服务器信息的方法
+	 * 
+	 * @return thrift服务器信息对象
+	 */
+	public ThriftServerInfo getThriftServerInfo() {
+		return thriftServerInfo;
+	}
+
+	/**
 	 * 添加空闲连接的方法
 	 * 
 	 * @param thriftConnectionHandle
@@ -79,5 +95,14 @@ public class ThriftConnectionPartition<T extends TServiceClient> implements Seri
 	public void addFreeConnection(ThriftConnectionHandle<T> thriftConnectionHandle) {
 		// TODO Auto-generated method stub
 
+	}
+
+	/**
+	 * 获取服务器是否关闭标识位的方法
+	 * 
+	 * @return 服务器是否关闭标识位
+	 */
+	public AtomicBoolean getServerIsDown() {
+		return serverIsDown;
 	}
 }

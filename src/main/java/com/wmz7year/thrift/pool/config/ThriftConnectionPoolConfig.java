@@ -93,6 +93,16 @@ public class ThriftConnectionPoolConfig {
 	private long maxConnectionAgeInSeconds = 0;
 
 	/**
+	 * 当连接获取失败时 重试获取的次数
+	 */
+	private int acquireRetryAttempts = 5;
+
+	/**
+	 * 当连接获取失败时 重试获取的时间间隔
+	 */
+	private long acquireRetryDelayInMs = 7000;
+
+	/**
 	 * 队列模式
 	 */
 	private ServiceOrder serviceOrder = ServiceOrder.FIFO;
@@ -236,8 +246,27 @@ public class ThriftConnectionPoolConfig {
 		return serviceOrder;
 	}
 
-	public void setServiceOrder(ServiceOrder serviceOrder) {
+	public ThriftConnectionPoolConfig setServiceOrder(ServiceOrder serviceOrder) {
 		this.serviceOrder = serviceOrder;
+		return this;
+	}
+
+	public int getAcquireRetryAttempts() {
+		return this.acquireRetryAttempts;
+	}
+
+	public ThriftConnectionPoolConfig setAcquireRetryAttempts(int acquireRetryAttempts) {
+		this.acquireRetryAttempts = acquireRetryAttempts;
+		return this;
+	}
+
+	public long getAcquireRetryDelayInMs() {
+		return this.acquireRetryDelayInMs;
+	}
+
+	public ThriftConnectionPoolConfig setAcquireRetryDelay(int acquireRetryDelayInMs) {
+		this.acquireRetryDelayInMs = acquireRetryDelayInMs;
+		return this;
 	}
 
 	/**

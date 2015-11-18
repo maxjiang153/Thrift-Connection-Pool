@@ -18,15 +18,19 @@ package com.wmz7year.thrift.pool;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.thrift.TServiceClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.wmz7year.thrift.pool.config.ThriftServerInfo;
 import com.wmz7year.thrift.pool.connection.ThriftConnection;
+import com.wmz7year.thrift.pool.exception.ThriftConnectionPoolException;
 
 /**
- * thrift连接代理类
+ * thrift连接代理类<br>
+ * 
  * 
  * @Title: ThriftConnectionHandle.java
  * @Package com.wmz7year.thrift.pool
@@ -38,10 +42,50 @@ public class ThriftConnectionHandle<T extends TServiceClient> implements ThriftC
 	protected static Logger logger = LoggerFactory.getLogger(ThriftConnectionHandle.class);
 	private static final long serialVersionUID = 8927450495285911268L;
 
+	/**
+	 * 连接池对象
+	 */
+	private ThriftConnectionPool<T> thriftConnectionPool;
+
+	/**
+	 * 连接所在的分区
+	 */
+	private ThriftConnectionPartition<T> thriftConnectionPartition;
+	/**
+	 * thrift服务器信息
+	 */
+	private ThriftServerInfo thriftServerInfo;
+	/**
+	 * 连接超时时间
+	 */
+	private long connectionTimeout;
+	/**
+	 * 连接最大存活时间
+	 */
+	protected long maxConnectionAgeInMs;
+	/**
+	 * 连接代理类持有的真实连接对象
+	 */
+	private ThriftConnection<T> thriftConnection;
+
 	public ThriftConnectionHandle(ThriftConnection<T> thriftConnection,
 			ThriftConnectionPartition<T> thriftConnectionPartition, ThriftConnectionPool<T> thriftConnectionPool,
-			boolean recreating) {
-		// TODO Auto-generated constructor stub
+			boolean recreating) throws ThriftConnectionPoolException {
+		// 判断是否是新连接
+		boolean newConnection = thriftConnection == null;
+
+		this.thriftConnectionPartition = thriftConnectionPartition;
+		this.thriftConnectionPool = thriftConnectionPool;
+		this.thriftServerInfo = thriftConnectionPartition.getThriftServerInfo();
+		this.connectionTimeout = thriftConnectionPool.getConfig().getConnectTimeout();
+		this.connectionTimeout = thriftConnectionPool.getConfig().getMaxConnectionAge(TimeUnit.MILLISECONDS);
+
+		try {
+			this.thriftConnection = newConnection ? thriftConnectionPool.obtainInternalConnection(this)
+					: thriftConnection;
+		} catch (ThriftConnectionPoolException e) {
+			throw e;
+		}
 	}
 
 	/*
@@ -57,6 +101,43 @@ public class ThriftConnectionHandle<T extends TServiceClient> implements ThriftC
 	public T getClient() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	/**
+	 * 获取连接代理对象绑定的原始连接的方法
+	 * 
+	 * @return 原始连接对象
+	 */
+	public ThriftConnection<T> getInternalConnection() {
+		return this.thriftConnection;
+	}
+
+	/**
+	 * 设置代理对象绑定的原始连接的方法
+	 * 
+	 * @param thriftConnection
+	 *            原始连接对象
+	 */
+	public void setInternalConnection(ThriftConnection<T> thriftConnection) {
+		this.thriftConnection = thriftConnection;
+	}
+
+	/**
+	 * 获取连接代理对象所对应的thrift服务器信息对象
+	 * 
+	 * @return thrift服务器信息对象
+	 */
+	public ThriftServerInfo getThriftServerInfo() {
+		return this.thriftServerInfo;
+	}
+
+	/**
+	 * 获取连接代理类所在的分区对象
+	 * 
+	 * @return 分区对象
+	 */
+	public ThriftConnectionPartition<T> getConnectionPartition() {
+		return this.thriftConnectionPartition;
 	}
 
 }
