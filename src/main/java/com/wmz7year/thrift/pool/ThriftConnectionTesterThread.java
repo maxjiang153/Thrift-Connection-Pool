@@ -40,8 +40,7 @@ public class ThriftConnectionTesterThread<T extends TServiceClient> implements R
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
-
+		System.out.println("ThriftConnectionTesterThread");
 	}
 
 }

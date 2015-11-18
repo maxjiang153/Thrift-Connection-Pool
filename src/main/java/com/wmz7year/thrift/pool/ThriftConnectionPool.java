@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -33,6 +34,7 @@ import org.apache.thrift.TServiceClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.wmz7year.thrift.pool.config.ThriftConnectionPoolConfig;
@@ -336,6 +338,20 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 	 */
 	public ThriftConnection<T> getConnection() throws ThriftConnectionPoolException {
 		return this.connectionStrategy.getConnection();
+	}
+
+	/**
+	 * 异步获取连接的方法
+	 * 
+	 * @return 连接代理对象
+	 */
+	public ListenableFuture<ThriftConnection<T>> getAsyncConnection() {
+		return this.asyncExecutor.submit(new Callable<ThriftConnection<T>>() {
+
+			public ThriftConnection<T> call() throws Exception {
+				return getConnection();
+			}
+		});
 	}
 
 	/**
