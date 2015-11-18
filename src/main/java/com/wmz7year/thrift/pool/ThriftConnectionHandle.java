@@ -43,11 +43,6 @@ public class ThriftConnectionHandle<T extends TServiceClient> implements ThriftC
 	private static final long serialVersionUID = 8927450495285911268L;
 
 	/**
-	 * 连接池对象
-	 */
-	private ThriftConnectionPool<T> thriftConnectionPool;
-
-	/**
 	 * 连接所在的分区
 	 */
 	private ThriftConnectionPartition<T> thriftConnectionPartition;
@@ -75,7 +70,6 @@ public class ThriftConnectionHandle<T extends TServiceClient> implements ThriftC
 		boolean newConnection = thriftConnection == null;
 
 		this.thriftConnectionPartition = thriftConnectionPartition;
-		this.thriftConnectionPool = thriftConnectionPool;
 		this.thriftServerInfo = thriftConnectionPartition.getThriftServerInfo();
 		this.connectionTimeout = thriftConnectionPool.getConfig().getConnectTimeout();
 		this.connectionTimeout = thriftConnectionPool.getConfig().getMaxConnectionAge(TimeUnit.MILLISECONDS);
@@ -93,14 +87,20 @@ public class ThriftConnectionHandle<T extends TServiceClient> implements ThriftC
 	 */
 	@Override
 	public void close() throws IOException {
-		// TODO Auto-generated method stub
-
+		if (thriftConnection != null) {
+			thriftConnection.close();
+		}
 	}
 
+	/*
+	 * @see com.wmz7year.thrift.pool.connection.ThriftConnection#getClient()
+	 */
 	@Override
 	public T getClient() {
-		// TODO Auto-generated method stub
-		return null;
+		if (thriftConnection != null) {
+			return thriftConnection.getClient();
+		}
+		throw new IllegalStateException("连接代理类没有绑定的原始连接信息");
 	}
 
 	/**
@@ -140,4 +140,12 @@ public class ThriftConnectionHandle<T extends TServiceClient> implements ThriftC
 		return this.thriftConnectionPartition;
 	}
 
+	/**
+	 * 获取连接超时时间的方法
+	 * 
+	 * @return 连接超时时间
+	 */
+	public long getConnectionTimeout() {
+		return this.connectionTimeout;
+	}
 }

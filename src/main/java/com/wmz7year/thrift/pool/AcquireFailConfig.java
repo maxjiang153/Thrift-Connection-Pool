@@ -52,4 +52,17 @@ public class AcquireFailConfig {
 	public void setLogMessage(String logMessage) {
 		this.logMessage = logMessage;
 	}
+
+	public String getLogMessage() {
+		return logMessage;
+	}
+
+	public AtomicInteger getAcquireRetryAttempts() {
+		return acquireRetryAttempts;
+	}
+
+	public long getAcquireRetryDelayInMs() {
+		return acquireRetryDelayInMs;
+	}
+
 }
