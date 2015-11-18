@@ -1,5 +1,8 @@
 package com.wmz7year.thrift.pool.config;
 
+import java.util.Collection;
+import java.util.HashSet;
+
 import org.apache.thrift.TServiceClient;
 
 /**
@@ -28,6 +31,11 @@ public class ThriftConnectionPoolConfig {
 	 */
 	private Class<? extends TServiceClient> clientClass;
 
+	/**
+	 * 配置的服务器列表
+	 */
+	private Collection<ThriftServerInfo> thriftServers = new HashSet<ThriftServerInfo>();
+
 	public TProtocolType getThriftProtocol() {
 		return thriftProtocol;
 	}
@@ -53,6 +61,39 @@ public class ThriftConnectionPoolConfig {
 	public ThriftConnectionPoolConfig setClientClass(Class<? extends TServiceClient> clientClass) {
 		this.clientClass = clientClass;
 		return this;
+	}
+
+	/**
+	 * 添加thrift服务器信息的方法
+	 * 
+	 * @param host
+	 *            服务器地址
+	 * @param port
+	 *            服务器端口
+	 */
+	public ThriftConnectionPoolConfig addThriftServer(String host, int port) {
+		addThriftServer(new ThriftServerInfo(host, port));
+		return this;
+	}
+
+	/**
+	 * 添加thrift服务信息对象的方法
+	 * 
+	 * @param serverInfo
+	 *            服务器信息对象
+	 */
+	public ThriftConnectionPoolConfig addThriftServer(ThriftServerInfo serverInfo) {
+		thriftServers.add(serverInfo);
+		return this;
+	}
+
+	/**
+	 * 获取配置的thrift服务器列表的方法
+	 * 
+	 * @return thrift服务器列表集合
+	 */
+	public Collection<ThriftServerInfo> getThriftServers() {
+		return thriftServers;
 	}
 
 	/**
