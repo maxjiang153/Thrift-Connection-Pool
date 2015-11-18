@@ -93,4 +93,12 @@ public class ThriftServerInfo {
 		return true;
 	}
 
+	/*
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "ThriftServerInfo [host=" + host + ", port=" + port + "]";
+	}
+
 }

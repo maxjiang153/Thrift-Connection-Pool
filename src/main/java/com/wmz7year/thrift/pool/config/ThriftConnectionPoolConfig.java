@@ -16,8 +16,10 @@
 
 package com.wmz7year.thrift.pool.config;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 
 import org.apache.thrift.TServiceClient;
 
@@ -118,8 +120,10 @@ public class ThriftConnectionPoolConfig {
 	 * 
 	 * @return thrift服务器列表集合
 	 */
-	public Collection<ThriftServerInfo> getThriftServers() {
-		return thriftServers;
+	public List<ThriftServerInfo> getThriftServers() {
+		List<ThriftServerInfo> servers = new ArrayList<ThriftServerInfo>();
+		servers.addAll(thriftServers);
+		return servers;
 	}
 
 	public boolean isLazyInit() {
