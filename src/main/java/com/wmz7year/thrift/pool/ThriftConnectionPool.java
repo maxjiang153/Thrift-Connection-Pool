@@ -201,59 +201,77 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 			this.connectionTimeoutInMs = Long.MAX_VALUE;
 		}
 
+		// 根据服务器配置创建不同的连接分区
+		for (int p = 0; p < thriftServerCount; p++) {
+			ThriftServerInfo thriftServerInfo = thriftServers.get(p);
+			ThriftConnectionPartition<T> thriftConnectionPartition = createThriftConnectionPartition(thriftServerInfo);
+			partitions.add(thriftConnectionPartition);
+		}
+	}
+
+	/**
+	 * 根据配置信息对象创建连接分区的方法
+	 * 
+	 * @param thriftServerInfo
+	 *            配置信息对象
+	 * @return 连接分区对象
+	 * @throws ThriftConnectionPoolException
+	 *             创建连接分区过程中可能产生的异常
+	 */
+	private ThriftConnectionPartition<T> createThriftConnectionPartition(ThriftServerInfo thriftServerInfo)
+			throws ThriftConnectionPoolException {
 		// 队列模式
 		ServiceOrder serviceOrder = this.config.getServiceOrder();
 
-		// 根据服务器配置创建不同的连接分区
-		for (int p = 0; p < thriftServerCount; p++) {
-			ThriftConnectionPartition<T> thriftConnectionPartition = new ThriftConnectionPartition<T>(this,
-					thriftServers.get(p));
-			this.partitions.add(thriftConnectionPartition);
-			// 添加空闲连接队列
-			BlockingQueue<ThriftConnectionHandle<T>> connectionHandles = new LinkedBlockingQueue<ThriftConnectionHandle<T>>(
-					this.config.getMaxConnectionPerServer());
-			this.partitions.get(p).setFreeConnections(connectionHandles);
+		ThriftConnectionPartition<T> thriftConnectionPartition = new ThriftConnectionPartition<T>(this,
+				thriftServerInfo);
+		// 添加空闲连接队列
+		BlockingQueue<ThriftConnectionHandle<T>> connectionHandles = new LinkedBlockingQueue<ThriftConnectionHandle<T>>(
+				this.config.getMaxConnectionPerServer());
+		thriftConnectionPartition.setFreeConnections(connectionHandles);
 
-			if (!this.config.isLazyInit()) {
-				for (int i = 0; i < this.config.getMinConnectionPerServer(); i++) {
-					// 初始化连接代理对象
-					this.partitions.get(p).addFreeConnection(
-							new ThriftConnectionHandle<T>(null, this.partitions.get(p), this, false));
-				}
-
+		if (!this.config.isLazyInit()) {
+			for (int i = 0; i < this.config.getMinConnectionPerServer(); i++) {
+				// 初始化连接代理对象
+				thriftConnectionPartition
+						.addFreeConnection(new ThriftConnectionHandle<T>(null, thriftConnectionPartition, this, false));
 			}
 
-			// 连接过期时间监控
-			if (this.config.getIdleConnectionTestPeriod(TimeUnit.SECONDS) > 0
-					|| this.config.getIdleMaxAge(TimeUnit.SECONDS) > 0) {
-
-				final Runnable connectionTester = new ThriftConnectionTesterThread<T>(thriftConnectionPartition, this,
-						this.config.getIdleMaxAge(TimeUnit.MILLISECONDS),
-						this.config.getIdleConnectionTestPeriod(TimeUnit.MILLISECONDS), serviceOrder);
-				long delayInSeconds = this.config.getIdleConnectionTestPeriod(TimeUnit.SECONDS);
-				if (delayInSeconds == 0L) {
-					delayInSeconds = this.config.getIdleMaxAge(TimeUnit.SECONDS);
-				}
-				if (this.config.getIdleMaxAge(TimeUnit.SECONDS) < delayInSeconds
-						&& this.config.getIdleConnectionTestPeriod(TimeUnit.SECONDS) != 0
-						&& this.config.getIdleMaxAge(TimeUnit.SECONDS) != 0) {
-					delayInSeconds = this.config.getIdleMaxAge(TimeUnit.SECONDS);
-				}
-				this.keepAliveScheduler.scheduleAtFixedRate(connectionTester, delayInSeconds, delayInSeconds,
-						TimeUnit.SECONDS);
-			}
-
-			// 连接最长存活时间监控
-			if (this.config.getMaxConnectionAgeInSeconds() > 0) {
-				final Runnable connectionMaxAgeTester = new ThriftConnectionMaxAgeThread<T>(thriftConnectionPartition,
-						this, this.config.getMaxConnectionAge(TimeUnit.MILLISECONDS), serviceOrder);
-				this.maxAliveScheduler.scheduleAtFixedRate(connectionMaxAgeTester,
-						this.config.getMaxConnectionAgeInSeconds(), this.config.getMaxConnectionAgeInSeconds(),
-						TimeUnit.SECONDS);
-			}
-			// 连接数量监控
-			this.connectionsScheduler.execute(new PoolWatchThread<T>(thriftConnectionPartition, this));
 		}
+
+		// 连接过期时间监控
+		if (this.config.getIdleConnectionTestPeriod(TimeUnit.SECONDS) > 0
+				|| this.config.getIdleMaxAge(TimeUnit.SECONDS) > 0) {
+
+			final Runnable connectionTester = new ThriftConnectionTesterThread<T>(thriftConnectionPartition, this,
+					this.config.getIdleMaxAge(TimeUnit.MILLISECONDS),
+					this.config.getIdleConnectionTestPeriod(TimeUnit.MILLISECONDS), serviceOrder);
+			long delayInSeconds = this.config.getIdleConnectionTestPeriod(TimeUnit.SECONDS);
+			if (delayInSeconds == 0L) {
+				delayInSeconds = this.config.getIdleMaxAge(TimeUnit.SECONDS);
+			}
+			if (this.config.getIdleMaxAge(TimeUnit.SECONDS) < delayInSeconds
+					&& this.config.getIdleConnectionTestPeriod(TimeUnit.SECONDS) != 0
+					&& this.config.getIdleMaxAge(TimeUnit.SECONDS) != 0) {
+				delayInSeconds = this.config.getIdleMaxAge(TimeUnit.SECONDS);
+			}
+			this.keepAliveScheduler.scheduleAtFixedRate(connectionTester, delayInSeconds, delayInSeconds,
+					TimeUnit.SECONDS);
+		}
+
+		// 连接最长存活时间监控
+		if (this.config.getMaxConnectionAgeInSeconds() > 0) {
+			final Runnable connectionMaxAgeTester = new ThriftConnectionMaxAgeThread<T>(thriftConnectionPartition, this,
+					this.config.getMaxConnectionAge(TimeUnit.MILLISECONDS), serviceOrder);
+			this.maxAliveScheduler.scheduleAtFixedRate(connectionMaxAgeTester,
+					this.config.getMaxConnectionAgeInSeconds(), this.config.getMaxConnectionAgeInSeconds(),
+					TimeUnit.SECONDS);
+		}
+		// 连接数量监控
+		this.connectionsScheduler.execute(new PoolWatchThread<T>(thriftConnectionPartition, this));
+
+		return thriftConnectionPartition;
+
 	}
 
 	/**
