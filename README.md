@@ -6,7 +6,29 @@
   3、支持thrift服务器列表的动态管理<br/>
 
 <h1>示例</h1>
-<strong>https://github.com/wmz7year/Thrift-Connection-Pool/blob/master/src/test/java/com/wmz7year/thrift/pool/config/TestPool.java</strong>
+
+	ThriftConnectionPoolConfig config = new ThriftConnectionPoolConfig();
+	config.setConnectTimeout(3000);
+	config.setThriftProtocol(TProtocolType.BINARY);
+	config.setClientClass(Example.Client.class);
+	config.addThriftServer("127.0.0.1", 9119);
+	config.setMaxConnectionPerServer(2);
+	config.setMinConnectionPerServer(1);
+	config.setIdleMaxAge(2, TimeUnit.SECONDS);
+	config.setMaxConnectionAge(2);
+	config.setLazyInit(false);
+	try {
+		ThriftConnectionPool<Example.Client> pool = new ThriftConnectionPool<Example.Client>(config);
+		Example.Client client = pool.getConnection().getClient();
+		client.ping();
+		pool.close();
+	} catch (ThriftConnectionPoolException e) {
+		e.printStackTrace();
+	} catch (TException e) {
+		e.printStackTrace();
+	} catch (IOException e) {
+		e.printStackTrace();
+	}
 
 <h1>使用</h1>
 	maven中央仓库发布审核中。。。
