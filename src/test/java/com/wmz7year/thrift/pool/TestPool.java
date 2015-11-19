@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.wmz7year.thrift.pool.config;
+package com.wmz7year.thrift.pool;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.thrift.TException;
 
 import com.wmz7year.thrift.pool.ThriftConnectionPool;
+import com.wmz7year.thrift.pool.config.ThriftConnectionPoolConfig;
 import com.wmz7year.thrift.pool.config.ThriftConnectionPoolConfig.TProtocolType;
 import com.wmz7year.thrift.pool.example.Example;
 import com.wmz7year.thrift.pool.exception.ThriftConnectionPoolException;

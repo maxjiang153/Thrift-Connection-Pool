@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.wmz7year.thrift.pool.config;
+package com.wmz7year.thrift.pool;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
