@@ -251,6 +251,7 @@ public abstract class BasicAbstractTest extends TestCase {
 					thriftArgs.protocolFactory(proFactory);
 					TServer tserver = new TThreadPoolServer(thriftArgs);
 					servers.add(tserver);
+					logger.info("启动测试服务监听：" + port);
 					tserver.serve();
 				} catch (TTransportException e) {
 					logger.error("thrift服务器启动失败", e);
@@ -265,6 +266,8 @@ public abstract class BasicAbstractTest extends TestCase {
 		if (throwable != null) {
 			throw throwable;
 		}
+		// 等待服务器启动
+		Thread.sleep(1000);
 		return serverInfo;
 	}
 
