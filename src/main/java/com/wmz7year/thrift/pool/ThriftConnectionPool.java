@@ -271,6 +271,9 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 					for (ThriftConnectionHandle<T> c : clist) {
 						destroyConnection(c);
 					}
+					partitions.remove(thriftConnectionPartition);
+					thriftServers.remove(thriftServerInfo);
+					thriftServerCount = partitions.size();
 					return true;
 				}
 			}
@@ -681,5 +684,14 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 		for (ThriftConnectionHandle<T> c : clist) {
 			destroyConnection(c);
 		}
+	}
+
+	/**
+	 * 获取thrift服务器数量的方法
+	 * 
+	 * @return 服务器数量
+	 */
+	public int getThriftServerCount() {
+		return thriftServerCount;
 	}
 }

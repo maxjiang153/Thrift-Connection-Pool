@@ -54,14 +54,20 @@ public class DynamicServersTest extends BasicAbstractTest {
 		ThriftConnectionPool<Example.Client> pool = new ThriftConnectionPool<Example.Client>(config);
 
 		int testCount = (servers.size() + 1) * config.getMaxConnectionPerServer() * 10;
+
+		int currentServer = pool.getThriftServerCount();
 		ThriftServerInfo newServer = startServer();
 		for (int i = 0; i < testCount; i++) {
 			if (i % 3 == 0) {
 				logger.info("添加新服务器");
 				pool.addThriftServer(newServer);
+				currentServer++;
+				assertEquals(currentServer, pool.getThriftServerCount());
 			} else if (i % 7 == 0) {
 				logger.info("移除服务器");
 				pool.removeThriftServer(newServer);
+				currentServer--;
+				assertEquals(currentServer, pool.getThriftServerCount());
 			}
 			ThriftConnection<Client> connection = pool.getConnection();
 			connection.getClient().ping();
