@@ -20,6 +20,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
@@ -29,6 +31,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.thrift.TServiceClient;
 import org.slf4j.Logger;
@@ -127,6 +130,11 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 	protected long connectionTimeoutInMs;
 
 	/**
+	 * 连接创建统计锁
+	 */
+	protected ReentrantReadWriteLock serverListLock = new ReentrantReadWriteLock();
+
+	/**
 	 * 构造器
 	 * 
 	 * @param config
@@ -207,6 +215,69 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 			ThriftConnectionPartition<T> thriftConnectionPartition = createThriftConnectionPartition(thriftServerInfo);
 			partitions.add(thriftConnectionPartition);
 		}
+	}
+
+	/**
+	 * 添加新的thrift服务器的方法
+	 * 
+	 * @param thriftServerInfo
+	 *            需要添加的服务器信息
+	 * @return true为添加成功 false为添加失败
+	 */
+	public boolean addThriftServer(ThriftServerInfo thriftServerInfo) throws ThriftConnectionPoolException {
+		serverListLock.writeLock().lock();
+		try {
+			// 验证服务器是否可用
+			try {
+				ThriftConnection<T> connection = obtainRawInternalConnection(thriftServerInfo);
+				connection.close();
+			} catch (Exception e) {
+				throw new ThriftConnectionPoolException(e);
+			}
+			ThriftConnectionPartition<T> thriftConnectionPartition = createThriftConnectionPartition(thriftServerInfo);
+
+			partitions.add(thriftConnectionPartition);
+			thriftServers.add(thriftServerInfo);
+			thriftServerCount = partitions.size();
+		} finally {
+			serverListLock.writeLock().unlock();
+		}
+		return true;
+	}
+
+	/**
+	 * 移除现有thrift服务器的方法<br>
+	 * 注意 如果没有可用的thrift则无法获取到连接
+	 * 
+	 * @param thriftServerInfo
+	 *            需要删除的服务器信息
+	 * @return true为删除成功 false为删除失败
+	 */
+	public boolean removeThriftServer(ThriftServerInfo thriftServerInfo) {
+		// 不存在这台服务器 直接返回失败
+		if (!thriftServers.contains(thriftServerInfo)) {
+			return false;
+		}
+
+		serverListLock.writeLock().lock();
+		try {
+			Iterator<ThriftConnectionPartition<T>> iterator = partitions.iterator();
+			while (iterator.hasNext()) {
+				ThriftConnectionPartition<T> thriftConnectionPartition = iterator.next();
+				if (thriftConnectionPartition.getThriftServerInfo().equals(thriftServerInfo)) {
+					thriftConnectionPartition.setUnableToCreateMoreTransactions(false);
+					List<ThriftConnectionHandle<T>> clist = new LinkedList<ThriftConnectionHandle<T>>();
+					thriftConnectionPartition.getFreeConnections().drainTo(clist);
+					for (ThriftConnectionHandle<T> c : clist) {
+						destroyConnection(c);
+					}
+					return true;
+				}
+			}
+		} finally {
+			serverListLock.writeLock().unlock();
+		}
+		return false;
 	}
 
 	/**
