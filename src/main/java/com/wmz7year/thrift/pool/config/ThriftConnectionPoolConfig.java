@@ -26,6 +26,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.thrift.TServiceClient;
 
+import com.wmz7year.thrift.pool.exception.ThriftConnectionPoolException;
+
 /**
  * thrift连接池配置类<br>
  * 
@@ -83,7 +85,7 @@ public class ThriftConnectionPoolConfig {
 	private long idleConnectionTestPeriodInSeconds = 10;
 
 	/**
-	 * 为使用连接关闭时间
+	 * 未使用连接关闭时间
 	 */
 	private long idleMaxAgeInSeconds = 20;
 
@@ -297,6 +299,64 @@ public class ThriftConnectionPoolConfig {
 
 	public void setAcquireIncrement(int acquireIncrement) {
 		this.acquireIncrement = acquireIncrement;
+	}
+
+	/**
+	 * 检查配置信息的方法
+	 * 
+	 * @throws ThriftConnectionPoolException
+	 *             当配置信息出现问题时抛出该异常
+	 */
+	public void check() throws ThriftConnectionPoolException {
+		if (connectTimeout <= 0) {
+			throw new ThriftConnectionPoolException("连接超时时间必须大于0");
+		}
+
+		if (clientClass == null) {
+			throw new ThriftConnectionPoolException("thrift客户端实现类未设置");
+		}
+
+		// TODO ping 方法
+
+		if (maxConnectionPerServer <= 0) {
+			throw new ThriftConnectionPoolException("每台服务器的最大连接数必须大于0");
+		}
+
+		if (minConnectionPerServer < 0) {
+			throw new ThriftConnectionPoolException("每台服务器最小连接数不能小于0");
+		}
+
+		if (minConnectionPerServer > maxConnectionAgeInSeconds) {
+			throw new ThriftConnectionPoolException("每台服务器的最小连接数不能超过最大连接数配置");
+		}
+
+		if (idleConnectionTestPeriodInSeconds <= 0) {
+			throw new ThriftConnectionPoolException("检测时间周期必须大于0秒");
+		}
+
+		if (idleMaxAgeInSeconds <= 0) {
+			throw new ThriftConnectionPoolException("未使用连接关闭时间必须大于0秒");
+		}
+
+		if (maxConnectionAgeInSeconds <= 0) {
+			throw new ThriftConnectionPoolException("连接最大生存时间必须大于0秒");
+		}
+
+		if (acquireRetryAttempts < 0) {
+			throw new ThriftConnectionPoolException("获取连接重试次数不能小于0");
+		}
+
+		if (acquireRetryDelayInMs < 0) {
+			throw new ThriftConnectionPoolException("获取连接重试等待时间不能小于0毫秒");
+		}
+
+		if (connectionTimeoutInMs < 0) {
+			throw new ThriftConnectionPoolException("获取连接等待时间不能小于0毫秒");
+		}
+
+		if (acquireIncrement <= 0) {
+			throw new ThriftConnectionPoolException("每次创建原始连接的数量必须大于0个");
+		}
 	}
 
 	/**

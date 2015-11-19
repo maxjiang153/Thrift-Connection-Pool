@@ -144,7 +144,8 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 	 */
 	public ThriftConnectionPool(ThriftConnectionPoolConfig config) throws ThriftConnectionPoolException {
 		this.config = config;
-		// TODO check 配置
+		// 检查配置内容是否正确
+		this.config.check();
 		this.connectionTimeOut = this.config.getConnectTimeout();
 
 		// 获取配置的服务器列表
@@ -180,7 +181,6 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 			}
 		}
 
-		// TODO 连接追踪？
 		this.asyncExecutor = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
 
 		// 设置线程池名称
@@ -200,7 +200,6 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 		// 创建分区列表
 		this.partitions = new ArrayList<ThriftConnectionPartition<T>>(thriftServerCount);
 
-		// TODO 其他配置
 		this.poolAvailabilityThreshold = this.config.getPoolAvailabilityThreshold();
 		this.connectionStrategy = new DefaultThriftConnectionStrategy<T>(this);
 		this.connectionTimeoutInMs = this.config.getConnectionTimeoutInMs();
