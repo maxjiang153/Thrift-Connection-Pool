@@ -47,7 +47,7 @@ public class TaskEngine {
 
 	private Timer timer;
 	private ExecutorService executor;
-	private Map<TimerTask, TimerTaskWrapper> wrappedTasks = new ConcurrentHashMap<>();
+	private Map<TimerTask, TimerTaskWrapper> wrappedTasks = new ConcurrentHashMap<TimerTask, TimerTaskWrapper>();
 
 	private TaskEngine() {
 		timer = new Timer("TaskEngine-timer", true);

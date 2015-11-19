@@ -114,7 +114,7 @@ public abstract class BasicAbstractTest extends TestCase {
 
 		try {
 			beforeTest();
-		} catch (Exception | Error t) {
+		} catch (Exception t) {
 			t.printStackTrace();
 
 			tearDown();
