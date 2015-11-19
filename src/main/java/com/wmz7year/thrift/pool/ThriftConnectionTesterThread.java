@@ -16,6 +16,8 @@
 
 package com.wmz7year.thrift.pool;
 
+import java.util.TimerTask;
+
 import org.apache.thrift.TServiceClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +35,7 @@ import com.wmz7year.thrift.pool.exception.ThriftConnectionPoolException;
  * @date 2015年11月18日 下午1:17:20
  * @version V1.0
  */
-public class ThriftConnectionTesterThread<T extends TServiceClient> implements Runnable {
+public class ThriftConnectionTesterThread<T extends TServiceClient> extends TimerTask {
 	private static final Logger logger = LoggerFactory.getLogger(ThriftConnectionTesterThread.class);
 	/**
 	 * 当连接闲置多长时间后进行连接测试
@@ -64,6 +66,7 @@ public class ThriftConnectionTesterThread<T extends TServiceClient> implements R
 		this.idleConnectionTestPeriodInMs = idleConnectionTestPeriod;
 		this.thriftConnectionPool = thriftConnectionPool;
 		this.lifoMode = lifoMode;
+		this.thriftConnectionPartition.registConnectionTesterThread(this);
 	}
 
 	/*

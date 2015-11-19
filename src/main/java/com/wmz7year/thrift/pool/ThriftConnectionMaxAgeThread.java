@@ -16,6 +16,8 @@
 
 package com.wmz7year.thrift.pool;
 
+import java.util.TimerTask;
+
 import org.apache.thrift.TServiceClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +33,7 @@ import com.wmz7year.thrift.pool.config.ThriftConnectionPoolConfig.ServiceOrder;
  * @date 2015年11月18日 下午1:24:42
  * @version V1.0
  */
-public class ThriftConnectionMaxAgeThread<T extends TServiceClient> implements Runnable {
+public class ThriftConnectionMaxAgeThread<T extends TServiceClient> extends TimerTask {
 	private static final Logger logger = LoggerFactory.getLogger(ThriftConnectionMaxAgeThread.class);
 
 	/**
@@ -57,6 +59,7 @@ public class ThriftConnectionMaxAgeThread<T extends TServiceClient> implements R
 		this.maxConnectionAge = maxConnectionAge;
 		this.lifoMode = lifoMode;
 		this.thriftConnectionPool = thriftConnectionPool;
+		this.thriftConnectionPartition.registConnectionMaxAgeThread(this);
 	}
 
 	/*

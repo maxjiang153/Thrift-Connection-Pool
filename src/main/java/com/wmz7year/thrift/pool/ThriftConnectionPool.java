@@ -24,12 +24,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -85,22 +84,6 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 	 * 用于异步方式获取连接的服务
 	 */
 	private ListeningExecutorService asyncExecutor;
-
-	/**
-	 * 用于保持连接，定时执行连接上的某个方法
-	 */
-	protected ScheduledExecutorService keepAliveScheduler;
-
-	/**
-	 * 处理连接最大存活时间的定时器
-	 */
-	private ScheduledExecutorService maxAliveScheduler;
-
-	/**
-	 * 监听每个服务器上的连接<br>
-	 * 检查是需要动态创建新的连接还是关闭多余的连接
-	 */
-	private ExecutorService connectionsScheduler;
 
 	/**
 	 * 保存分区的连接信息
@@ -184,19 +167,8 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 
 		this.asyncExecutor = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
 
-		// 设置线程池名称
-		String suffix = "";
-		if (this.config.getPoolName() != null) {
-			suffix = "-" + this.config.getPoolName();
-		}
-
-		// 创建连接池 FIXME 目前最大的监控池为100个thrift服务 已经满足绝大多数需求 可以考虑修改为动态的线程池大小
-		this.keepAliveScheduler = Executors.newScheduledThreadPool(100,
-				new CustomThreadFactory("ThriftConnectionPool-keep-alive-scheduler" + suffix, true));
-		this.maxAliveScheduler = Executors.newScheduledThreadPool(100,
-				new CustomThreadFactory("ThriftConnectionPool-max-alive-scheduler" + suffix, true));
-		this.connectionsScheduler = Executors.newFixedThreadPool(100,
-				new CustomThreadFactory("ThriftConnectionPoolP-pool-watch-thread" + suffix, true));
+		// 创建线程调度引擎
+		TaskEngine.getInstance();
 
 		// 创建分区列表
 		this.partitions = new ArrayList<ThriftConnectionPartition<T>>(thriftServerCount);
@@ -271,6 +243,7 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 					for (ThriftConnectionHandle<T> c : clist) {
 						destroyConnection(c);
 					}
+					thriftConnectionPartition.stopThreads();
 					partitions.remove(thriftConnectionPartition);
 					thriftServers.remove(thriftServerInfo);
 					thriftServerCount = partitions.size();
@@ -317,7 +290,7 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 		if (this.config.getIdleConnectionTestPeriod(TimeUnit.SECONDS) > 0
 				|| this.config.getIdleMaxAge(TimeUnit.SECONDS) > 0) {
 
-			final Runnable connectionTester = new ThriftConnectionTesterThread<T>(thriftConnectionPartition, this,
+			final TimerTask connectionTester = new ThriftConnectionTesterThread<T>(thriftConnectionPartition, this,
 					this.config.getIdleMaxAge(TimeUnit.MILLISECONDS),
 					this.config.getIdleConnectionTestPeriod(TimeUnit.MILLISECONDS), serviceOrder);
 			long delayInSeconds = this.config.getIdleConnectionTestPeriod(TimeUnit.SECONDS);
@@ -329,20 +302,18 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 					&& this.config.getIdleMaxAge(TimeUnit.SECONDS) != 0) {
 				delayInSeconds = this.config.getIdleMaxAge(TimeUnit.SECONDS);
 			}
-			this.keepAliveScheduler.scheduleAtFixedRate(connectionTester, delayInSeconds, delayInSeconds,
-					TimeUnit.SECONDS);
+			TaskEngine.getInstance().scheduleAtFixedRate(connectionTester, delayInSeconds, delayInSeconds);
 		}
 
 		// 连接最长存活时间监控
 		if (this.config.getMaxConnectionAgeInSeconds() > 0) {
-			final Runnable connectionMaxAgeTester = new ThriftConnectionMaxAgeThread<T>(thriftConnectionPartition, this,
-					this.config.getMaxConnectionAge(TimeUnit.MILLISECONDS), serviceOrder);
-			this.maxAliveScheduler.scheduleAtFixedRate(connectionMaxAgeTester,
-					this.config.getMaxConnectionAgeInSeconds(), this.config.getMaxConnectionAgeInSeconds(),
-					TimeUnit.SECONDS);
+			final TimerTask connectionMaxAgeTester = new ThriftConnectionMaxAgeThread<T>(thriftConnectionPartition,
+					this, this.config.getMaxConnectionAge(TimeUnit.MILLISECONDS), serviceOrder);
+			TaskEngine.getInstance().scheduleAtFixedRate(connectionMaxAgeTester,
+					this.config.getMaxConnectionAgeInSeconds(), this.config.getMaxConnectionAgeInSeconds());
 		}
 		// 连接数量监控
-		this.connectionsScheduler.execute(new PoolWatchThread<T>(thriftConnectionPartition, this));
+		TaskEngine.getInstance().submit(new PoolWatchThread<T>(thriftConnectionPartition, this));
 
 		return thriftConnectionPartition;
 
@@ -380,17 +351,12 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 			logger.info("开始关闭thrift连接池...");
 			this.poolShuttingDown = true;
 			this.shutdownStackTrace = captureStackTrace("开始关闭thrift连接池");
-			this.keepAliveScheduler.shutdownNow();
-			this.maxAliveScheduler.shutdownNow();
-			this.connectionsScheduler.shutdownNow();
+
+			TaskEngine.getInstance().shutdown();
 
 			this.asyncExecutor.shutdownNow();
 
 			try {
-				this.connectionsScheduler.awaitTermination(5, TimeUnit.SECONDS);
-
-				this.maxAliveScheduler.awaitTermination(5, TimeUnit.SECONDS);
-				this.keepAliveScheduler.awaitTermination(5, TimeUnit.SECONDS);
 				this.asyncExecutor.awaitTermination(5, TimeUnit.SECONDS);
 
 			} catch (InterruptedException e) {
@@ -673,6 +639,7 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 			serverListLock.writeLock().lock();
 			// 首先移除分区信息
 			partitions.remove(thriftConnectionPartition);
+			thriftConnectionPartition.stopThreads();
 			ThriftServerInfo thriftServerInfo = thriftConnectionPartition.getThriftServerInfo();
 			thriftServers.remove(thriftServerInfo);
 			thriftServerCount = partitions.size();

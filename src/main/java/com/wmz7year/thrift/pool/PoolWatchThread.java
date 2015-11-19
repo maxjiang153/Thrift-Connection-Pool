@@ -66,6 +66,10 @@ public class PoolWatchThread<T extends TServiceClient> implements Runnable {
 	 * 持续获取连接失败的次数
 	 */
 	private int currentConnectionFailedCount;
+	/**
+	 * 是否运行的表识位
+	 */
+	private boolean run;
 
 	public PoolWatchThread(ThriftConnectionPartition<T> thriftConnectionPartition,
 			ThriftConnectionPool<T> thriftConnectionPool) {
@@ -75,6 +79,8 @@ public class PoolWatchThread<T extends TServiceClient> implements Runnable {
 		this.acquireRetryDelayInMs = this.thriftConnectionPool.getConfig().getAcquireRetryDelayInMs();
 		this.poolAvailabilityThreshold = this.thriftConnectionPool.getConfig().getPoolAvailabilityThreshold();
 		this.maxConnectionCreateFailedCount = this.thriftConnectionPool.getConfig().getMaxConnectionCreateFailedCount();
+		this.run = true;
+		this.thriftConnectionPartition.registPoolWatchThread(this);
 	}
 
 	/*
@@ -84,7 +90,7 @@ public class PoolWatchThread<T extends TServiceClient> implements Runnable {
 	public void run() {
 		int maxNewConnections = 0;
 
-		while (true) {
+		while (run) {
 			maxNewConnections = 0;
 			try {
 				if (this.lazyInit) { // 无视第一次的信号量
@@ -156,7 +162,7 @@ public class PoolWatchThread<T extends TServiceClient> implements Runnable {
 			// 判断连续次数是否是超限了
 			if (currentConnectionFailedCount == maxConnectionCreateFailedCount) {
 				logger.error("Error in trying to obtain a connection in " + currentConnectionFailedCount
-						+ "count will remove the server", e);
+						+ " count will remove the server", e);
 				thriftConnectionPool.destroyThriftConnectionPartition(thriftConnectionPartition);
 			} else {
 				logger.error("Error in trying to obtain a connection. Retrying in " + this.acquireRetryDelayInMs + "ms",
@@ -164,6 +170,13 @@ public class PoolWatchThread<T extends TServiceClient> implements Runnable {
 				Thread.sleep(this.acquireRetryDelayInMs);
 			}
 		}
+	}
+
+	/**
+	 * 停止检测线程的方法
+	 */
+	public void stop() {
+		this.run = false;
 	}
 
 }

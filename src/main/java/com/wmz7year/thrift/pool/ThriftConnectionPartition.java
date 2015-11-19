@@ -86,6 +86,21 @@ public class ThriftConnectionPartition<T extends TServiceClient> implements Seri
 	private BlockingQueue<Object> poolWatchThreadSignalQueue = new ArrayBlockingQueue<Object>(1);
 
 	/**
+	 * 连接测试线程
+	 */
+	private ThriftConnectionTesterThread<T> thriftConnectionTesterThread;
+
+	/**
+	 * 连接最大时间检测线程
+	 */
+	private ThriftConnectionMaxAgeThread<T> thriftConnectionMaxAgeThread;
+
+	/**
+	 * 连接池监控线程
+	 */
+	private PoolWatchThread<T> poolWatchThread;
+
+	/**
 	 * true为不需要创建更多的连接 说明连接已经到了最大数量
 	 */
 	private boolean unableToCreateMoreTransactions = false;
@@ -270,6 +285,51 @@ public class ThriftConnectionPartition<T extends TServiceClient> implements Seri
 	 */
 	protected int getAcquireIncrement() {
 		return this.acquireIncrement;
+	}
+
+	/**
+	 * 注册连接测试线程的方法
+	 * 
+	 * @param thriftConnectionTesterThread
+	 *            连接测试线程对象
+	 */
+	public void registConnectionTesterThread(ThriftConnectionTesterThread<T> thriftConnectionTesterThread) {
+		this.thriftConnectionTesterThread = thriftConnectionTesterThread;
+	}
+
+	/**
+	 * 注册连接最大时间检测线程的方法
+	 * 
+	 * @param thriftConnectionMaxAgeThread
+	 *            连接最大时间检测线程对象
+	 */
+	public void registConnectionMaxAgeThread(ThriftConnectionMaxAgeThread<T> thriftConnectionMaxAgeThread) {
+		this.thriftConnectionMaxAgeThread = thriftConnectionMaxAgeThread;
+	}
+
+	/**
+	 * 注册连接池监控线程的方法
+	 * 
+	 * @param poolWatchThread
+	 *            连接池监控线程
+	 */
+	public void registPoolWatchThread(PoolWatchThread<T> poolWatchThread) {
+		this.poolWatchThread = poolWatchThread;
+	}
+
+	/**
+	 * 停止连接分区对应线程的方法
+	 */
+	public void stopThreads() {
+		// 停止连接测试线程
+		TaskEngine.getInstance().cancelScheduledTask(thriftConnectionTesterThread);
+
+		// 停止连接最大时间检测线程
+		TaskEngine.getInstance().cancelScheduledTask(thriftConnectionMaxAgeThread);
+
+		// 停止分区检测线程
+		this.poolWatchThreadSignalQueue.offer(new Object());
+		poolWatchThread.stop();
 	}
 
 }

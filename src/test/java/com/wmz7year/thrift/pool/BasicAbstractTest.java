@@ -185,7 +185,7 @@ public abstract class BasicAbstractTest extends TestCase {
 	/**
 	 * 关闭所有thrift服务的方法
 	 */
-	private void stopAllServers() {
+	protected void stopAllServers() {
 		for (TServer tServer : servers) {
 			tServer.stop();
 		}

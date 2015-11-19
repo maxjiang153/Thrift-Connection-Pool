@@ -51,6 +51,9 @@ public class DefaultThriftConnectionStrategy<T extends TServiceClient> extends A
 		// 如果立即获取连接失败 则换一个分区继续获取
 		// TODO 设置当连接获取超时返回null？
 		if (result == null) {
+			if (this.pool.getThriftServerCount() == 0) {
+				throw new ThriftConnectionPoolException("当前没有可用的服务器  无法获取连接");
+			}
 			int partition = (int) (Thread.currentThread().getId() % this.pool.thriftServerCount);
 
 			ThriftConnectionPartition<T> thriftConnectionPartition = this.pool.partitions.get(partition);
@@ -98,6 +101,9 @@ public class DefaultThriftConnectionStrategy<T extends TServiceClient> extends A
 	@Override
 	public ThriftConnection<T> pollConnection() {
 		ThriftConnection<T> result = null;
+		if (pool.getThriftServerCount() == 0) {
+			throw new IllegalStateException("当前无可用连接服务器");
+		}
 		int partition = (int) (Thread.currentThread().getId() % this.pool.thriftServerCount);
 
 		ThriftConnectionPartition<T> thriftConnectionPartition = this.pool.partitions.get(partition);
