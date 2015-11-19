@@ -57,6 +57,16 @@ public class PoolWatchThread<T extends TServiceClient> implements Runnable {
 	 */
 	private long acquireRetryDelayInMs = 1000L;
 
+	/**
+	 * 最大连接获取失效次数
+	 */
+	private int maxConnectionCreateFailedCount;
+
+	/**
+	 * 持续获取连接失败的次数
+	 */
+	private int currentConnectionFailedCount;
+
 	public PoolWatchThread(ThriftConnectionPartition<T> thriftConnectionPartition,
 			ThriftConnectionPool<T> thriftConnectionPool) {
 		this.thriftConnectionPool = thriftConnectionPool;
@@ -64,6 +74,7 @@ public class PoolWatchThread<T extends TServiceClient> implements Runnable {
 		this.lazyInit = this.thriftConnectionPool.getConfig().isLazyInit();
 		this.acquireRetryDelayInMs = this.thriftConnectionPool.getConfig().getAcquireRetryDelayInMs();
 		this.poolAvailabilityThreshold = this.thriftConnectionPool.getConfig().getPoolAvailabilityThreshold();
+		this.maxConnectionCreateFailedCount = this.thriftConnectionPool.getConfig().getMaxConnectionCreateFailedCount();
 	}
 
 	/*
@@ -138,9 +149,20 @@ public class PoolWatchThread<T extends TServiceClient> implements Runnable {
 				this.thriftConnectionPartition.addFreeConnection(new ThriftConnectionHandle<T>(null,
 						this.thriftConnectionPartition, this.thriftConnectionPool, false));
 			}
+			// 如果正确的获取连接则失败次数重置为0
+			currentConnectionFailedCount = 0;
 		} catch (Exception e) {
-			logger.error("Error in trying to obtain a connection. Retrying in " + this.acquireRetryDelayInMs + "ms", e);
-			Thread.sleep(this.acquireRetryDelayInMs);
+			currentConnectionFailedCount++;
+			// 判断连续次数是否是超限了
+			if (currentConnectionFailedCount == maxConnectionCreateFailedCount) {
+				logger.error("Error in trying to obtain a connection in " + currentConnectionFailedCount
+						+ "count will remove the server", e);
+				thriftConnectionPool.destroyThriftConnectionPartition(thriftConnectionPartition);
+			} else {
+				logger.error("Error in trying to obtain a connection. Retrying in " + this.acquireRetryDelayInMs + "ms",
+						e);
+				Thread.sleep(this.acquireRetryDelayInMs);
+			}
 		}
 	}
 

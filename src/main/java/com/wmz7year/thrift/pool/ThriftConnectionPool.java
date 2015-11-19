@@ -658,4 +658,28 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 			logger.error("Error in attempting to close connection", e);
 		}
 	}
+
+	/**
+	 * 销毁单个连接分区的方法
+	 * 
+	 * @param thriftConnectionPartition
+	 *            需要销毁的连接分区对象
+	 */
+	public void destroyThriftConnectionPartition(ThriftConnectionPartition<T> thriftConnectionPartition) {
+		try {
+			serverListLock.writeLock().lock();
+			// 首先移除分区信息
+			partitions.remove(thriftConnectionPartition);
+			ThriftServerInfo thriftServerInfo = thriftConnectionPartition.getThriftServerInfo();
+			thriftServers.remove(thriftServerInfo);
+			thriftServerCount = partitions.size();
+		} finally {
+			serverListLock.writeLock().unlock();
+		}
+		List<ThriftConnectionHandle<T>> clist = new LinkedList<ThriftConnectionHandle<T>>();
+		thriftConnectionPartition.getFreeConnections().drainTo(clist);
+		for (ThriftConnectionHandle<T> c : clist) {
+			destroyConnection(c);
+		}
+	}
 }

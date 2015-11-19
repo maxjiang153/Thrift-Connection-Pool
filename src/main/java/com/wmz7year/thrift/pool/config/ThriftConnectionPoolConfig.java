@@ -122,6 +122,12 @@ public class ThriftConnectionPoolConfig {
 	 */
 	private int acquireIncrement = 2;
 
+	/**
+	 * 最大连续获取失败连接的次数<br>
+	 * 如果到了该值依然无法获取连接 连接池则会排出对应问题连接的服务器
+	 */
+	private int maxConnectionCreateFailedCount = 3;
+
 	public TProtocolType getThriftProtocol() {
 		return thriftProtocol;
 	}
@@ -299,6 +305,14 @@ public class ThriftConnectionPoolConfig {
 
 	public void setAcquireIncrement(int acquireIncrement) {
 		this.acquireIncrement = acquireIncrement;
+	}
+
+	public int getMaxConnectionCreateFailedCount() {
+		return maxConnectionCreateFailedCount;
+	}
+
+	public void setMaxConnectionCreateFailedCount(int maxConnectionCreateFailedCount) {
+		this.maxConnectionCreateFailedCount = maxConnectionCreateFailedCount;
 	}
 
 	/**
