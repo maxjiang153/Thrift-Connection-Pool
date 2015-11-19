@@ -19,6 +19,7 @@ package com.wmz7year.thrift.pool;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -597,7 +598,14 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 		try {
 			connection.logicallyClosed.compareAndSet(true, false);
 
-			// TODO 需要调可能存在的ping方法？
+			// 反射调用ping方法
+			T client = connection.getClient();
+			try {
+				Method method = client.getClass().getMethod("ping");
+				method.invoke(client);
+			} catch (Exception e) {
+				return false;
+			}
 
 			result = true;
 		} finally {

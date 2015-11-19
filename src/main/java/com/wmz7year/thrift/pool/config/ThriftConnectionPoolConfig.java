@@ -316,7 +316,12 @@ public class ThriftConnectionPoolConfig {
 			throw new ThriftConnectionPoolException("thrift客户端实现类未设置");
 		}
 
-		// TODO ping 方法
+		// 检测ping方法
+		try {
+			clientClass.getMethod("ping");
+		} catch (NoSuchMethodException e) {
+			throw new ThriftConnectionPoolException("Thrift客户端实现类必须带有ping()方法用于检测连接");
+		}
 
 		if (maxConnectionPerServer <= 0) {
 			throw new ThriftConnectionPoolException("每台服务器的最大连接数必须大于0");
