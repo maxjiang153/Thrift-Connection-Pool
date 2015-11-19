@@ -31,14 +31,19 @@
 	}
 
 <h1>使用</h1>
-	maven中央仓库发布审核中。。。
-
+	<dependency>
+    		<groupId>com.github.wmz7year</groupId>
+    		<artifactId>ThriftConnectionPool</artifactId>
+    		<version>1.0.1-alpha</version>
+	</dependency>
+	
 <h1>特性</h1>	
   1、支持服务器之间的负载均衡<br/>
   2、每个服务器拥有一个独立的连接分区 所有的连接分区合并一起为整个连接池<br/>
   3、连接池支持自动创建连接、管理超时连接、管理失效连接<br/>
-  4、支持服务器列表动态增加或者移除
-  5、支持自动调取ping方法(在thrift描述文件添加方法void ping(),)检测连接可用性
+  4、支持服务器列表动态增加或者移除<br/>
+  5、支持自动调取ping方法(在thrift描述文件添加方法void ping(),)检测连接可用性<br/>
+  6、支持当服务不可用时自动将对应的服务器剔除连接池的功能<br/>
 
 <h1>接下来需要完善内容：</h1>
  1、补充文档<br/>
