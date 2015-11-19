@@ -2,13 +2,16 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.wmz7year</groupId>
+	<groupId>com.github.wmz7year</groupId>
 	<artifactId>ThriftConnectionPool</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>ThriftConnectionPool</name>
 	<url>https://github.com/wmz7year/Thrift-Connection-Pool/</url>
+
+	<description>Apache Thrift Client connection pool</description>
+	<inceptionYear>2015</inceptionYear>
 
 	<developers>
 		<developer>
@@ -25,7 +28,13 @@
          scm:git:https://github.com/wmz7year/Thrift-Connection-Pool.git
      	</developerConnection>
 		<url>https://github.com/wmz7year/Thrift-Connection-Pool/</url>
+		<tag>HEAD</tag>
 	</scm>
+
+	<issueManagement>
+		<system>GitHub Issues</system>
+		<url>https://github.com/wmz7year/Thrift-Connection-Pool/issues</url>
+	</issueManagement>
 
 	<licenses>
 		<license>
@@ -49,6 +58,7 @@
 		<!-- plugin versions -->
 		<maven.source.plugin>2.2.1</maven.source.plugin>
 		<maven.javadoc.plugin>2.9.1</maven.javadoc.plugin>
+		<maven.gpc.plugin>1.5</maven.gpc.plugin>
 	</properties>
 
 	<dependencies>
@@ -127,6 +137,23 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>${maven.gpc.plugin}</version>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
+
+
+
 </project>
