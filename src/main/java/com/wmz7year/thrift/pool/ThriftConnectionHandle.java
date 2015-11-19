@@ -334,4 +334,22 @@ public class ThriftConnectionHandle<T extends TServiceClient> implements ThriftC
 		return this.connectionCreationTimeInMs;
 	}
 
+	/**
+	 * 获取连接最后的使用时间
+	 * 
+	 * @return 连接最后的使用时间
+	 */
+	public long getConnectionLastUsedInMs() {
+		return this.connectionLastUsedInMs;
+	}
+
+	/**
+	 * 获取连接最后重置时间的方法
+	 * 
+	 * @return 连接最后重置时间
+	 */
+	public long getConnectionLastResetInMs() {
+		return this.connectionLastResetInMs;
+	}
+
 }
