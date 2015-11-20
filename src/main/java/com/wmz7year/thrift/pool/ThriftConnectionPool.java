@@ -643,6 +643,10 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 			ThriftServerInfo thriftServerInfo = thriftConnectionPartition.getThriftServerInfo();
 			thriftServers.remove(thriftServerInfo);
 			thriftServerCount = partitions.size();
+			logger.info("连接池移除服务器信息：" + thriftServerInfo.getHost() + " 端口:" + thriftServerInfo.getPort());
+			if (getThriftServerCount() == 0) {
+				logger.error("当前连接池中无可用服务器  无法获取新的客户端连接");
+			}
 		} finally {
 			serverListLock.writeLock().unlock();
 		}
