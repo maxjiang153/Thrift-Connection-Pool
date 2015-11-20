@@ -106,7 +106,7 @@ public class DefaultThriftConnection<T extends TServiceClient> implements Thrift
 				logger.debug("创建新连接成功:" + transport);
 			}
 		} catch (Exception e) {
-			throw new ThriftConnectionPoolException(e);
+			throw new ThriftConnectionPoolException("无法连接服务器：" + host + " 端口：" + port);
 		}
 	}
 
