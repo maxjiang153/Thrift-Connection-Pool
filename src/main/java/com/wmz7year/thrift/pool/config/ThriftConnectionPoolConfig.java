@@ -20,11 +20,17 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.thrift.TServiceClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.wmz7year.thrift.pool.exception.ThriftConnectionPoolException;
 
@@ -38,7 +44,7 @@ import com.wmz7year.thrift.pool.exception.ThriftConnectionPoolException;
  * @version V1.0
  */
 public class ThriftConnectionPoolConfig {
-
+	private static final Logger logger = LoggerFactory.getLogger(ThriftConnectionPoolConfig.class);
 	/**
 	 * 连接池名称
 	 */
@@ -58,6 +64,11 @@ public class ThriftConnectionPoolConfig {
 	 * thrift客户端类对象
 	 */
 	private Class<? extends TServiceClient> clientClass;
+
+	/**
+	 * 多服务情况下的客户端列表
+	 */
+	private Map<String, Class<? extends TServiceClient>> clientClasses = new HashMap<String, Class<? extends TServiceClient>>();
 
 	/**
 	 * 配置的服务器列表
@@ -127,6 +138,19 @@ public class ThriftConnectionPoolConfig {
 	 * 如果到了该值依然无法获取连接 连接池则会排出对应问题连接的服务器
 	 */
 	private int maxConnectionCreateFailedCount = 3;
+
+	/**
+	 * thrift接口模式
+	 */
+	private ThriftServiceType thriftServiceType;
+
+	public ThriftConnectionPoolConfig() {
+		this(ThriftServiceType.SINGLE_INTERFACE);
+	}
+
+	public ThriftConnectionPoolConfig(ThriftServiceType thriftServiceType) {
+		this.thriftServiceType = thriftServiceType;
+	}
 
 	public TProtocolType getThriftProtocol() {
 		return thriftProtocol;
@@ -315,6 +339,18 @@ public class ThriftConnectionPoolConfig {
 		this.maxConnectionCreateFailedCount = maxConnectionCreateFailedCount;
 	}
 
+	public void addThriftClientClass(String serviceName, Class<? extends TServiceClient> clazz) {
+		this.clientClasses.put(serviceName, clazz);
+	}
+	
+	public Map<String, Class<? extends TServiceClient>> getThriftClientClasses(){
+		return this.clientClasses;
+	}
+
+	public ThriftServiceType getThriftServiceType() {
+		return thriftServiceType;
+	}
+
 	/**
 	 * 检查配置信息的方法
 	 * 
@@ -326,15 +362,41 @@ public class ThriftConnectionPoolConfig {
 			throw new ThriftConnectionPoolException("连接超时时间必须大于0");
 		}
 
-		if (clientClass == null) {
-			throw new ThriftConnectionPoolException("thrift客户端实现类未设置");
-		}
-
-		// 检测ping方法
-		try {
-			clientClass.getMethod("ping");
-		} catch (NoSuchMethodException e) {
-			throw new ThriftConnectionPoolException("Thrift客户端实现类必须带有ping()方法用于检测连接");
+		// 判断是否是单接口模式 如果是则只检测单接口
+		if (getThriftServiceType() == ThriftServiceType.SINGLE_INTERFACE) {
+			if (clientClass == null) {
+				throw new ThriftConnectionPoolException("thrift客户端实现类未设置");
+			}
+			// 检测ping方法
+			try {
+				clientClass.getMethod("ping");
+			} catch (NoSuchMethodException e) {
+				throw new ThriftConnectionPoolException("Thrift客户端实现类必须带有ping()方法用于检测连接");
+			}
+		} else if (getThriftServiceType() == ThriftServiceType.MULTIPLEXED_INTERFACE) {
+			if (clientClasses.size() == 0) {
+				throw new ThriftConnectionPoolException("多服务thrift客户端实现类未设置");
+			}
+			// 检测所有接口
+			List<String> toRemoveClasses = new ArrayList<String>();
+			Iterator<Entry<String, Class<? extends TServiceClient>>> iterator = clientClasses.entrySet().iterator();
+			while (iterator.hasNext()) {
+				Entry<String, Class<? extends TServiceClient>> entry = iterator.next();
+				Class<? extends TServiceClient> clazz = entry.getValue();
+				try {
+					clazz.getMethod("ping");
+				} catch (NoSuchMethodException e) {
+					toRemoveClasses.add(entry.getKey());
+					logger.warn("接口：" + entry.getKey() + " 没有实现ping方法 无法创建对应的服务客户端");
+				}
+			}
+			for (String toRemoveClass : toRemoveClasses) {
+				clientClasses.remove(toRemoveClass);
+			}
+			Iterator<String> servicesNameIterator = clientClasses.keySet().iterator();
+			while (servicesNameIterator.hasNext()) {
+				logger.info("注册服务客户端：" + servicesNameIterator.next());
+			}
 		}
 
 		if (maxConnectionPerServer <= 0) {
@@ -410,6 +472,27 @@ public class ThriftConnectionPoolConfig {
 	 */
 	public enum ServiceOrder {
 		FIFO, LIFO
+	}
+
+	/**
+	 * thrift服务类型<br>
+	 * 单接口模式还是多接口模式
+	 * 
+	 * @Title: ThriftConnectionPoolConfig.java
+	 * @Package com.wmz7year.thrift.pool.config
+	 * @author jiangwei (ydswcy513@gmail.com)
+	 * @date 2015年11月20日 上午10:10:27
+	 * @version V1.0
+	 */
+	public enum ThriftServiceType {
+		/**
+		 * 单接口模式
+		 */
+		SINGLE_INTERFACE,
+		/**
+		 * 多接口模式
+		 */
+		MULTIPLEXED_INTERFACE
 	}
 
 }

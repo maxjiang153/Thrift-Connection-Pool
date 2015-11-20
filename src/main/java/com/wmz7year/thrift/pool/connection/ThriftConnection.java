@@ -32,11 +32,23 @@ import org.apache.thrift.TServiceClient;
 public interface ThriftConnection<T extends TServiceClient> extends Closeable {
 
 	/**
-	 * 获取客户端的方法
+	 * 获取客户端的方法<br>
+	 * 仅在单服务情况下试用 如果在多服务情况下试用则会抛出UnsupportedOperationException异常
 	 * 
 	 * @return 客户端对象
 	 */
 	public T getClient();
+
+	/**
+	 * 根据服务名称获取客户端的方法<br>
+	 * 在多服务情况下试用 如果在单服务情况下试用则直接返回客户端<br>
+	 * 如果服务名错误则返回null
+	 * 
+	 * @param serviceName
+	 *            服务名称
+	 * @return 客户端对象
+	 */
+	public <K extends TServiceClient> K getClient(String serviceName, Class<K> clazz);
 
 	/**
 	 * 判断连接是否关闭的表识位

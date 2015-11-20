@@ -189,6 +189,19 @@ public class ThriftConnectionHandle<T extends TServiceClient> implements ThriftC
 		throw new IllegalStateException("连接代理类没有绑定的原始连接信息");
 	}
 
+	/*
+	 * @see
+	 * com.wmz7year.thrift.pool.connection.ThriftConnection#getClient(java.lang.
+	 * String, java.lang.Class)
+	 */
+	@Override
+	public <K extends TServiceClient> K getClient(String serviceName, Class<K> clazz) {
+		if (thriftConnection != null) {
+			return thriftConnection.getClient(serviceName, clazz);
+		}
+		throw new IllegalStateException("连接代理类没有绑定的原始连接信息");
+	}
+
 	/**
 	 * 获取连接代理对象绑定的原始连接的方法
 	 * 

@@ -18,10 +18,15 @@ package com.wmz7year.thrift.pool.connection;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.thrift.TServiceClient;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TJSONProtocol;
+import org.apache.thrift.protocol.TMultiplexedProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
@@ -32,17 +37,16 @@ import com.wmz7year.thrift.pool.config.ThriftConnectionPoolConfig.TProtocolType;
 import com.wmz7year.thrift.pool.exception.ThriftConnectionPoolException;
 
 /**
- * 默认实现的thrift客户端对象
+ * 多服务支持的thrift连接对象
  * 
- * @Title: DefaultThriftConnection.java
+ * @Title: MulitServiceThriftConnecion.java
  * @Package com.wmz7year.thrift.pool.connection
- * @author jiangwei (jiangwei@1318.com)
- * @date 2015年11月18日 下午1:37:59
+ * @author jiangwei (ydswcy513@gmail.com)
+ * @date 2015年11月20日 上午10:59:44
  * @version V1.0
  */
-public class DefaultThriftConnection<T extends TServiceClient> implements ThriftConnection<T> {
-	private static final Logger logger = LoggerFactory.getLogger(DefaultThriftConnection.class);
-
+public class MulitServiceThriftConnecion<T extends TServiceClient> implements ThriftConnection<T> {
+	private static final Logger logger = LoggerFactory.getLogger(MulitServiceThriftConnecion.class);
 	/**
 	 * 服务器地址
 	 */
@@ -61,27 +65,27 @@ public class DefaultThriftConnection<T extends TServiceClient> implements Thrift
 	private TProtocolType tProtocolType;
 
 	/**
+	 * thrift客户端对象
+	 */
+	private Map<String, Class<? extends TServiceClient>> thriftClientClasses;
+
+	/**
 	 * thrift连接对象
 	 */
 	private TTransport transport;
 
 	/**
-	 * thrift客户端对象
+	 * 实例化后的客户端对象
 	 */
-	private T client;
+	private Map<String, T> clients = new HashMap<String, T>();
 
-	/**
-	 * 客户端类对象
-	 */
-	private Class<? extends TServiceClient> clientClass;
-
-	public DefaultThriftConnection(String host, int port, int connectionTimeOut, TProtocolType tProtocolType,
-			Class<? extends TServiceClient> clientClass) throws ThriftConnectionPoolException {
+	public MulitServiceThriftConnecion(String host, int port, int connectionTimeOut, TProtocolType tProtocolType,
+			Map<String, Class<? extends TServiceClient>> thriftClientClasses) throws ThriftConnectionPoolException {
 		this.host = host;
 		this.port = port;
 		this.connectionTimeOut = connectionTimeOut;
 		this.tProtocolType = tProtocolType;
-		this.clientClass = clientClass;
+		this.thriftClientClasses = thriftClientClasses;
 
 		// 创建连接
 		createConnection();
@@ -99,15 +103,58 @@ public class DefaultThriftConnection<T extends TServiceClient> implements Thrift
 			transport = new TSocket(host, port, connectionTimeOut);
 			transport.open();
 			TProtocol protocol = createTProtocol(transport);
-			// 反射实例化客户端对象
-			Constructor<? extends TServiceClient> clientConstructor = clientClass.getConstructor(TProtocol.class);
-			client = (T) clientConstructor.newInstance(protocol);
-			if (logger.isDebugEnabled()) {
-				logger.debug("创建新连接成功:" + transport);
+
+			Iterator<Entry<String, Class<? extends TServiceClient>>> iterator = thriftClientClasses.entrySet()
+					.iterator();
+			while (iterator.hasNext()) {
+				Entry<String, Class<? extends TServiceClient>> entry = iterator.next();
+				String serviceName = entry.getKey();
+				Class<? extends TServiceClient> clientClass = entry.getValue();
+				TMultiplexedProtocol multiProtocol = new TMultiplexedProtocol(protocol, serviceName);
+				// 反射实例化客户端对象
+				Constructor<? extends TServiceClient> clientConstructor = clientClass.getConstructor(TProtocol.class);
+				T client = (T) clientConstructor.newInstance(multiProtocol);
+				clients.put(serviceName, client);
+				if (logger.isDebugEnabled()) {
+					logger.debug("创建新连接成功:" + transport);
+				}
 			}
+
 		} catch (Exception e) {
 			throw new ThriftConnectionPoolException("无法连接服务器：" + host + " 端口：" + port);
 		}
+	}
+
+	/*
+	 * @see com.wmz7year.thrift.pool.connection.ThriftConnection#getClient()
+	 */
+	@Override
+	public T getClient() {
+		throw new UnsupportedOperationException("多服务情况下不允许调用单服务获取客户端的方法");
+	}
+
+	/*
+	 * @see
+	 * com.wmz7year.thrift.pool.connection.ThriftConnection#getClient(java.lang.
+	 * String, java.lang.Class)
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public <K extends TServiceClient> K getClient(String serviceName, Class<K> clazz) {
+		T serviceClient = this.clients.get(serviceName);
+		if (serviceClient == null) {
+			throw new IllegalArgumentException("未知的服务名称：" + serviceName);
+		}
+
+		return (K) serviceClient;
+	}
+
+	/*
+	 * @see com.wmz7year.thrift.pool.connection.ThriftConnection#isClosed()
+	 */
+	@Override
+	public boolean isClosed() {
+		return !transport.isOpen();
 	}
 
 	/**
@@ -131,28 +178,6 @@ public class DefaultThriftConnection<T extends TServiceClient> implements Thrift
 		if (transport != null) {
 			transport.close();
 		}
-	}
-
-	/*
-	 * @see com.wmz7year.thrift.pool.connection.ThriftConnection#getClient()
-	 */
-	@Override
-	public T getClient() {
-		return client;
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public <K extends TServiceClient> K getClient(String serviceName, Class<K> clazz) {
-		return (K) getClient();
-	}
-
-	/*
-	 * @see com.wmz7year.thrift.pool.connection.ThriftConnection#isClosed()
-	 */
-	@Override
-	public boolean isClosed() {
-		return !transport.isOpen();
 	}
 
 }

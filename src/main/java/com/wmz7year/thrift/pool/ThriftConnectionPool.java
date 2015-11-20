@@ -42,8 +42,10 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.wmz7year.thrift.pool.config.ThriftConnectionPoolConfig;
 import com.wmz7year.thrift.pool.config.ThriftConnectionPoolConfig.ServiceOrder;
+import com.wmz7year.thrift.pool.config.ThriftConnectionPoolConfig.ThriftServiceType;
 import com.wmz7year.thrift.pool.config.ThriftServerInfo;
 import com.wmz7year.thrift.pool.connection.DefaultThriftConnection;
+import com.wmz7year.thrift.pool.connection.MulitServiceThriftConnecion;
 import com.wmz7year.thrift.pool.connection.ThriftConnection;
 import com.wmz7year.thrift.pool.exception.ThriftConnectionPoolException;
 
@@ -119,6 +121,11 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 	protected ReentrantReadWriteLock serverListLock = new ReentrantReadWriteLock();
 
 	/**
+	 * thrift服务类型 单服务还是多服务
+	 */
+	protected ThriftServiceType thriftServiceType;
+
+	/**
 	 * 构造器
 	 * 
 	 * @param config
@@ -176,6 +183,7 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 		this.poolAvailabilityThreshold = this.config.getPoolAvailabilityThreshold();
 		this.connectionStrategy = new DefaultThriftConnectionStrategy<T>(this);
 		this.connectionTimeoutInMs = this.config.getConnectionTimeoutInMs();
+		this.thriftServiceType = this.config.getThriftServiceType();
 
 		if (this.connectionTimeoutInMs == 0) {
 			this.connectionTimeoutInMs = Long.MAX_VALUE;
@@ -330,8 +338,15 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 	 */
 	private ThriftConnection<T> obtainRawInternalConnection(ThriftServerInfo serverInfo)
 			throws ThriftConnectionPoolException {
-		ThriftConnection<T> connection = new DefaultThriftConnection<T>(serverInfo.getHost(), serverInfo.getPort(),
-				this.connectionTimeOut, this.config.getThriftProtocol(), this.config.getClientClass());
+		// 判断单服务还是多服务模式
+		ThriftConnection<T> connection = null;
+		if (this.thriftServiceType == ThriftServiceType.SINGLE_INTERFACE) {
+			connection = new DefaultThriftConnection<T>(serverInfo.getHost(), serverInfo.getPort(),
+					this.connectionTimeOut, this.config.getThriftProtocol(), this.config.getClientClass());
+		} else {
+			connection = new MulitServiceThriftConnecion<T>(serverInfo.getHost(), serverInfo.getPort(),
+					this.connectionTimeOut, this.config.getThriftProtocol(), this.config.getThriftClientClasses());
+		}
 		return connection;
 	}
 
@@ -665,4 +680,5 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 	public int getThriftServerCount() {
 		return thriftServerCount;
 	}
+
 }
