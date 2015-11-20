@@ -34,14 +34,17 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @version V1.0
  */
 public class TaskEngine {
-	private static TaskEngine instance = new TaskEngine();
+	private static TaskEngine instance = null;
 
 	/**
 	 * Returns a task engine instance (singleton).
 	 *
 	 * @return a task engine.
 	 */
-	public static TaskEngine getInstance() {
+	public static synchronized TaskEngine getInstance() {
+		if(instance == null){
+			instance = new TaskEngine();
+		}
 		return instance;
 	}
 
@@ -318,6 +321,8 @@ public class TaskEngine {
 			timer.cancel();
 			timer = null;
 		}
+		
+		instance = null;
 	}
 
 	/**
