@@ -6,7 +6,7 @@
   3、支持thrift服务器列表的动态管理<br/>
 
 <h1>示例</h1>
-
+<h3>单服务示例</h3>
 	ThriftConnectionPoolConfig config = new ThriftConnectionPoolConfig();
 	config.setConnectTimeout(3000);
 	config.setThriftProtocol(TProtocolType.BINARY);
@@ -30,11 +30,49 @@
 		e.printStackTrace();
 	}
 
+<h3>多接口服务示例</h3>
+	ThriftConnectionPoolConfig config = new ThriftConnectionPoolConfig(ThriftServiceType.MULTIPLEXED_INTERFACE);
+	config.setConnectTimeout(3000);
+	config.setThriftProtocol(TProtocolType.BINARY);
+	// 该端口不存在
+	for (ThriftServerInfo thriftServerInfo : servers) {
+		config.addThriftServer(thriftServerInfo.getHost(), thriftServerInfo.getPort());
+	}
+	config.addThriftClientClass("example", Example.Client.class);
+	config.addThriftClientClass("other", Other.Client.class);
+
+	config.setMaxConnectionPerServer(2);
+	config.setMinConnectionPerServer(1);
+	config.setIdleMaxAge(2, TimeUnit.SECONDS);
+	config.setMaxConnectionAge(2);
+	config.setLazyInit(false);
+	config.setAcquireIncrement(2);
+	config.setAcquireRetryDelay(2000);
+
+	config.setAcquireRetryAttempts(1);
+	config.setMaxConnectionCreateFailedCount(1);
+	config.setConnectionTimeoutInMs(5000);
+
+	config.check();
+
+	ThriftConnectionPool<TServiceClient> pool = new ThriftConnectionPool<TServiceClient>(config);
+	ThriftConnection<TServiceClient> connection = pool.getConnection();
+	// example service
+	com.wmz7year.thrift.pool.example.Example.Client exampleServiceClient = connection.getClient("example",
+			Example.Client.class);
+	exampleServiceClient.ping();
+
+	// other service
+	com.wmz7year.thrift.pool.example.Other.Client otherServiceClient = connection.getClient("other",
+			Other.Client.class);
+	otherServiceClient.ping();
+	pool.close();
+
 <h1>使用</h1>
 	<dependency>
     		<groupId>com.github.wmz7year</groupId>
     		<artifactId>ThriftConnectionPool</artifactId>
-    		<version>1.0.1-alpha</version>
+    		<version>1.0.2-alpha</version>
 	</dependency>
 	
 <h1>特性</h1>	
@@ -44,6 +82,7 @@
   4、支持服务器列表动态增加或者移除<br/>
   5、支持自动调取ping方法(在thrift描述文件添加方法void ping(),)检测连接可用性<br/>
   6、支持当服务不可用时自动将对应的服务器剔除连接池的功能<br/>
+  7、添加多服务接口支持<br/>
 
 <h1>接下来需要完善内容：</h1>
  1、补充文档<br/>
