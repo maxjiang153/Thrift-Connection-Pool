@@ -34,12 +34,9 @@
 	ThriftConnectionPoolConfig config = new ThriftConnectionPoolConfig(ThriftServiceType.MULTIPLEXED_INTERFACE);
 	config.setConnectTimeout(3000);
 	config.setThriftProtocol(TProtocolType.BINARY);
-	// 该端口不存在
-	for (ThriftServerInfo thriftServerInfo : servers) {
-		config.addThriftServer(thriftServerInfo.getHost(), thriftServerInfo.getPort());
-	}
-	config.addThriftClientClass("example", Example.Client.class);
+	config.addThriftServer("127.0.0.1", 9119);
 	config.addThriftClientClass("other", Other.Client.class);
+	config.addThriftClientClass("example", Example.Client.class);
 
 	config.setMaxConnectionPerServer(2);
 	config.setMinConnectionPerServer(1);
@@ -87,5 +84,5 @@
 <h1>接下来需要完善内容：</h1>
  1、补充文档<br/>
  2、补充性能测试<br/>
-
+ 3、完善使用例子<br/>
 
