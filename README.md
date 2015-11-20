@@ -31,12 +31,10 @@
 	}
 
 <h1>使用</h1>
-	1.0.1-alpha版本马上发布 还剩最后一个问题待解决
-	目前1.0.0-alpha版本已经发现若干个问题不建议使用
 	<dependency>
     		<groupId>com.github.wmz7year</groupId>
     		<artifactId>ThriftConnectionPool</artifactId>
-    		<version>1.0.0-alpha</version>
+    		<version>1.0.1-alpha</version>
 	</dependency>
 	
 <h1>特性</h1>	
