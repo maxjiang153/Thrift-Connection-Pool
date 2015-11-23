@@ -69,7 +69,7 @@
 	<dependency>
     		<groupId>com.github.wmz7year</groupId>
     		<artifactId>ThriftConnectionPool</artifactId>
-    		<version>1.0.2-alpha</version>
+    		<version>1.0.3-alpha</version>
 	</dependency>
 	
 <h1>特性</h1>	
