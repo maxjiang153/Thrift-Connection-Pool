@@ -18,6 +18,7 @@ package com.wmz7year.thrift.pool;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -26,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.wmz7year.thrift.pool.config.ThriftServerInfo;
+import com.wmz7year.thrift.pool.connection.MulitServiceThriftConnecion;
 import com.wmz7year.thrift.pool.connection.ThriftConnection;
 import com.wmz7year.thrift.pool.exception.ThriftConnectionPoolException;
 
@@ -270,6 +272,19 @@ public class ThriftConnectionHandle<T extends TServiceClient> implements ThriftC
 		} catch (IOException e) {
 			throw new ThriftConnectionPoolException(e);
 		}
+	}
+
+	/**
+	 * 获取多服务模式下所有thrift客户端的方法
+	 * 
+	 * @return 多服务下所有thrift客户端集合
+	 */
+	public Map<String, T> getMuiltServiceClients() {
+		if (this.thriftConnection instanceof MulitServiceThriftConnecion) {
+			MulitServiceThriftConnecion<T> connection = (MulitServiceThriftConnecion<T>) thriftConnection;
+			return connection.getMuiltServiceClients();
+		}
+		throw new IllegalStateException("单服务运行模式下不允许调用该方法");
 	}
 
 	/*

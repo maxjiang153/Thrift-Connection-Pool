@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
@@ -583,7 +584,21 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 			connection.logicallyClosed.compareAndSet(true, false);
 
 			// 反射调用ping方法
-			T client = connection.getClient();
+			T client = null;
+			if (this.thriftServiceType == ThriftServiceType.SINGLE_INTERFACE) {
+				client = connection.getClient();
+			} else {
+				Map<String, T> muiltServiceClients = connection.getMuiltServiceClients();
+				if (muiltServiceClients.size() == 0) { // 没有可用的客户端 直接返回
+					return false;
+				}
+				Iterator<T> iterator = muiltServiceClients.values().iterator();
+				if (iterator.hasNext()) {
+					client = iterator.next();
+				} else {
+					return false;
+				}
+			}
 			try {
 				Method method = client.getClass().getMethod("ping");
 				method.invoke(client);

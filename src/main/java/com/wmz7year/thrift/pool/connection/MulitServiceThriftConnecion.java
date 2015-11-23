@@ -180,4 +180,13 @@ public class MulitServiceThriftConnecion<T extends TServiceClient> implements Th
 		}
 	}
 
+	/**
+	 * 获取多服务模式下所有thrift客户端的方法
+	 * 
+	 * @return 多服务下所有thrift客户端集合
+	 */
+	public Map<String, T> getMuiltServiceClients() {
+		return this.clients;
+	}
+
 }
