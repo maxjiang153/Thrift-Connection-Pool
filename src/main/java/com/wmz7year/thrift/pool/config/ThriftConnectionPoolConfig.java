@@ -140,6 +140,12 @@ public class ThriftConnectionPoolConfig {
 	private int maxConnectionCreateFailedCount = 3;
 
 	/**
+	 * 是否支持没有服务器时启动连接池<br>
+	 * 在这种情况下无法获取连接 需要等待有服务器时才可以获取连接
+	 */
+	private boolean noServerStartUp;
+
+	/**
 	 * thrift接口模式
 	 */
 	private ThriftServiceType thriftServiceType;
@@ -342,13 +348,21 @@ public class ThriftConnectionPoolConfig {
 	public void addThriftClientClass(String serviceName, Class<? extends TServiceClient> clazz) {
 		this.clientClasses.put(serviceName, clazz);
 	}
-	
-	public Map<String, Class<? extends TServiceClient>> getThriftClientClasses(){
+
+	public Map<String, Class<? extends TServiceClient>> getThriftClientClasses() {
 		return this.clientClasses;
 	}
 
 	public ThriftServiceType getThriftServiceType() {
 		return thriftServiceType;
+	}
+
+	public boolean isNoServerStartUp() {
+		return noServerStartUp;
+	}
+
+	public void setNoServerStartUp(boolean noServerStartUp) {
+		this.noServerStartUp = noServerStartUp;
 	}
 
 	/**

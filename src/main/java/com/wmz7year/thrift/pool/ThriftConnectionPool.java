@@ -168,7 +168,7 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 
 			// 移除完毕检查数量
 			thriftServerCount = thriftServers.size();
-			if (thriftServerCount == 0) {
+			if (thriftServerCount == 0 && !this.config.isNoServerStartUp()) {
 				throw new ThriftConnectionPoolException("无可用thrift服务器，连接池启动失败");
 			}
 		}
