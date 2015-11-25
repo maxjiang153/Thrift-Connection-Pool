@@ -16,6 +16,8 @@
 
 package com.wmz7year.thrift.pool.config;
 
+import java.util.Arrays;
+
 /**
  * 封装thrift信息的实体类<br>
  * 目前只有服务器地址、端口两个属性<br>
@@ -36,11 +38,23 @@ public class ThriftServerInfo {
 	 * 服务器端口
 	 */
 	private int port;
+	/**
+	 * 服务器ID
+	 */
+	private byte[] serverID;
 
 	public ThriftServerInfo(String host, int port) {
 		super();
 		this.host = host;
 		this.port = port;
+		this.serverID = null;
+	}
+
+	public ThriftServerInfo(String host, int port, byte[] serverID) {
+		super();
+		this.host = host;
+		this.port = port;
+		this.serverID = serverID;
 	}
 
 	public String getHost() {
@@ -59,6 +73,14 @@ public class ThriftServerInfo {
 		this.port = port;
 	}
 
+	public byte[] getServerID() {
+		return serverID;
+	}
+
+	public void setServerID(byte[] serverID) {
+		this.serverID = serverID;
+	}
+
 	/*
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -68,6 +90,7 @@ public class ThriftServerInfo {
 		int result = 1;
 		result = prime * result + ((host == null) ? 0 : host.hashCode());
 		result = prime * result + port;
+		result = prime * result + Arrays.hashCode(serverID);
 		return result;
 	}
 
@@ -90,6 +113,8 @@ public class ThriftServerInfo {
 			return false;
 		if (port != other.port)
 			return false;
+		if (!Arrays.equals(serverID, other.serverID))
+			return false;
 		return true;
 	}
 
@@ -98,7 +123,7 @@ public class ThriftServerInfo {
 	 */
 	@Override
 	public String toString() {
-		return "ThriftServerInfo [host=" + host + ", port=" + port + "]";
+		return "ThriftServerInfo [host=" + host + ", port=" + port + ", serverID=" + Arrays.toString(serverID) + "]";
 	}
 
 }

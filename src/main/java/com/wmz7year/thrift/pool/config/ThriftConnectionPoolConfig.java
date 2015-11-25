@@ -191,7 +191,21 @@ public class ThriftConnectionPoolConfig {
 	 *            服务器端口
 	 */
 	public void addThriftServer(String host, int port) {
-		addThriftServer(new ThriftServerInfo(host, port));
+		addThriftServer(host, port, null);
+	}
+
+	/**
+	 * 添加thrift服务器信息的方法
+	 * 
+	 * @param host
+	 *            服务器地址
+	 * @param port
+	 *            服务器端口
+	 * @param serverID
+	 *            服务器ID
+	 */
+	public void addThriftServer(String host, int port, byte[] serverID) {
+		addThriftServer(new ThriftServerInfo(host, port, serverID));
 	}
 
 	/**

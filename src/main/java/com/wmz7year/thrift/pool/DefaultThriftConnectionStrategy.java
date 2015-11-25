@@ -16,12 +16,15 @@
 
 package com.wmz7year.thrift.pool;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.thrift.TServiceClient;
 
+import com.wmz7year.thrift.pool.config.ThriftServerInfo;
 import com.wmz7year.thrift.pool.connection.ThriftConnection;
 import com.wmz7year.thrift.pool.exception.ThriftConnectionPoolException;
 
@@ -68,6 +71,46 @@ public class DefaultThriftConnectionStrategy<T extends TServiceClient> extends A
 			} catch (InterruptedException e) {
 				throw new ThriftConnectionPoolException(e);
 			}
+		}
+		return result;
+	}
+
+	/*
+	 * @see com.wmz7year.thrift.pool.AbstractThriftConnectionStrategy#
+	 * getConnectionInternal(byte[])
+	 */
+	@Override
+	protected ThriftConnection<T> getConnectionInternal(byte[] nodeID) throws ThriftConnectionPoolException {
+		if (nodeID == null) {
+			throw new NullPointerException();
+		}
+		if (this.pool.getThriftServerCount() == 0) {
+			throw new ThriftConnectionPoolException("当前没有可用的服务器  无法获取连接");
+		}
+
+		List<ThriftConnectionPartition<T>> partitions = Collections.unmodifiableList(this.pool.partitions);
+		ThriftConnectionPartition<T> thriftConnectionPartition = null;
+		for (ThriftConnectionPartition<T> tempPartition : partitions) {
+			ThriftServerInfo thriftServerInfo = tempPartition.getThriftServerInfo();
+			if (Arrays.equals(thriftServerInfo.getServerID(), nodeID)) {
+				thriftConnectionPartition = tempPartition;
+				break;
+			}
+		}
+		if (thriftConnectionPartition == null) {
+			throw new ThriftConnectionPoolException("没有找到对应服务器节点：" + Arrays.toString(nodeID));
+		}
+
+		ThriftConnection<T> result = null;
+		try {
+			result = thriftConnectionPartition.poolFreeConnection(this.pool.connectionTimeoutInMs,
+					TimeUnit.MILLISECONDS);
+			if (result == null) {
+
+				throw new ThriftConnectionPoolException("Timed out waiting for a free available connection.");
+			}
+		} catch (InterruptedException e) {
+			throw new ThriftConnectionPoolException(e);
 		}
 		return result;
 	}

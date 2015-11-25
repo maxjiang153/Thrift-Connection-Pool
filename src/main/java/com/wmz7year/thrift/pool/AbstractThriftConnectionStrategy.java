@@ -91,13 +91,40 @@ public abstract class AbstractThriftConnectionStrategy<T extends TServiceClient>
 		return result;
 	}
 
+	/*
+	 * @see
+	 * com.wmz7year.thrift.pool.ThriftConnectionStrategy#getConnection(byte[])
+	 */
+	@Override
+	public ThriftConnection<T> getConnection(byte[] nodeID) throws ThriftConnectionPoolException {
+		long statsObtainTime = preConnection();
+
+		ThriftConnectionHandle<T> result = (ThriftConnectionHandle<T>) getConnectionInternal(nodeID);
+		if (result != null) {
+			postConnection(result, statsObtainTime);
+		}
+
+		return result;
+	}
+
 	/**
-	 * Actual call that returns a connection
+	 * 获取连接代理对象的方法
 	 * 
-	 * @return Connection
-	 * @throws SQLException
+	 * @return thrift服务器连接对象
+	 * @throws ThriftConnectionPoolException
 	 */
 	protected abstract ThriftConnection<T> getConnectionInternal() throws ThriftConnectionPoolException;
+
+	/**
+	 * 使用指定服务器节点获取连接代理对象的方法
+	 * 
+	 * @param nodeID
+	 *            thrift服务器节点ID
+	 * @return thrift服务器连接对象
+	 * @throws ThriftConnectionPoolException
+	 */
+	protected abstract ThriftConnection<T> getConnectionInternal(byte[] nodeID)
+			throws ThriftConnectionPoolException;
 
 	/*
 	 * @see

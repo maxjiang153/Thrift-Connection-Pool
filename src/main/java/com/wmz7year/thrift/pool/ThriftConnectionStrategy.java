@@ -42,6 +42,17 @@ public interface ThriftConnectionStrategy<T extends TServiceClient> {
 	public ThriftConnection<T> getConnection() throws ThriftConnectionPoolException;
 
 	/**
+	 * 使用指定服务器ID从连接池中获取一个连接的方法
+	 * 
+	 * @param nodeID
+	 *            服务器节点的ID
+	 * @return 连接对象
+	 * @throws ThriftConnectionPoolException
+	 *             当获取连接出现错误时抛出该异常
+	 */
+	public ThriftConnection<T> getConnection(byte[] nodeID) throws ThriftConnectionPoolException;
+
+	/**
 	 * 获取一个不阻塞的thrift代理连接
 	 * 
 	 * @return thrift连接代理对象

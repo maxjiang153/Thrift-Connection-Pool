@@ -415,6 +415,19 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 	}
 
 	/**
+	 * 使用指定服务器ID从连接池中获取一个连接的方法
+	 * 
+	 * @param nodeID
+	 *            服务器节点的ID
+	 * @return 连接对象
+	 * @throws ThriftConnectionPoolException
+	 *             当获取连接出现错误时抛出该异常
+	 */
+	public ThriftConnection<T> getConnection(byte[] nodeID) throws ThriftConnectionPoolException {
+		return this.connectionStrategy.getConnection(nodeID);
+	}
+
+	/**
 	 * 异步获取连接的方法
 	 * 
 	 * @return 连接代理对象
