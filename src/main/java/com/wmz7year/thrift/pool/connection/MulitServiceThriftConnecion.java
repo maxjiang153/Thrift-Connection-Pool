@@ -116,7 +116,7 @@ public class MulitServiceThriftConnecion<T extends TServiceClient> implements Th
 				T client = (T) clientConstructor.newInstance(multiProtocol);
 				clients.put(serviceName, client);
 				if (logger.isDebugEnabled()) {
-					logger.debug("创建新连接成功:" + transport);
+					logger.debug("创建新连接成功:" + host + " 端口：" + port);
 				}
 			}
 

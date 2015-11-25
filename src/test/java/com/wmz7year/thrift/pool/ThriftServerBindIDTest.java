@@ -60,7 +60,7 @@ public class ThriftServerBindIDTest extends BasicAbstractTest {
 		byte[] nodeID1 = String.format("%s%d", thriftServerInfo1.getHost(), thriftServerInfo1.getPort()).getBytes();
 		config.addThriftServer(thriftServerInfo1.getHost(), thriftServerInfo1.getPort(), nodeID1);
 
-		ThriftServerInfo thriftServerInfo2 = servers.get(0);
+		ThriftServerInfo thriftServerInfo2 = servers.get(1);
 		byte[] nodeID2 = String.format("%s%d", thriftServerInfo2.getHost(), thriftServerInfo2.getPort()).getBytes();
 		config.addThriftServer(thriftServerInfo2.getHost(), thriftServerInfo2.getPort(), nodeID2);
 

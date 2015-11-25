@@ -103,7 +103,7 @@ public class DefaultThriftConnection<T extends TServiceClient> implements Thrift
 			Constructor<? extends TServiceClient> clientConstructor = clientClass.getConstructor(TProtocol.class);
 			client = (T) clientConstructor.newInstance(protocol);
 			if (logger.isDebugEnabled()) {
-				logger.debug("创建新连接成功:" + transport);
+				logger.debug("创建新连接成功:" + host + " 端口：" + port);
 			}
 		} catch (Exception e) {
 			throw new ThriftConnectionPoolException("无法连接服务器：" + host + " 端口：" + port);
