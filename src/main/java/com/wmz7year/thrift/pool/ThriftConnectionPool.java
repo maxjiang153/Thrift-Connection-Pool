@@ -256,6 +256,10 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 					partitions.remove(thriftConnectionPartition);
 					thriftServers.remove(thriftServerInfo);
 					thriftServerCount = partitions.size();
+					logger.info("移除服务器操作完成 剩余服务器数量：" + getThriftServerCount());
+					if (getThriftServerCount() == 0) {
+						logger.warn("连接池中没有可用thrift服务器 无法获取连接");
+					}
 					return true;
 				}
 			}

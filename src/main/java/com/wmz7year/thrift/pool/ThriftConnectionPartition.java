@@ -328,8 +328,8 @@ public class ThriftConnectionPartition<T extends TServiceClient> implements Seri
 		TaskEngine.getInstance().cancelScheduledTask(thriftConnectionMaxAgeThread);
 
 		// 停止分区检测线程
-		this.poolWatchThreadSignalQueue.offer(new Object());
 		poolWatchThread.stop();
+		this.poolWatchThreadSignalQueue.offer(new Object());
 	}
 
 }

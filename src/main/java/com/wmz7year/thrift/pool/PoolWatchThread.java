@@ -107,6 +107,9 @@ public class PoolWatchThread<T extends TServiceClient> implements Runnable {
 					}
 
 					this.thriftConnectionPartition.getPoolWatchThreadSignalQueue().take();
+					if (!run) {
+						break;
+					}
 					maxNewConnections = this.thriftConnectionPartition.getMaxConnections()
 							- this.thriftConnectionPartition.getCreatedConnections();
 
@@ -150,6 +153,9 @@ public class PoolWatchThread<T extends TServiceClient> implements Runnable {
 		try {
 			for (int i = 0; i < connectionsToCreate; i++) {
 				if (this.thriftConnectionPool.poolShuttingDown) {
+					break;
+				}
+				if (!run) {
 					break;
 				}
 				this.thriftConnectionPartition.addFreeConnection(new ThriftConnectionHandle<T>(null,
