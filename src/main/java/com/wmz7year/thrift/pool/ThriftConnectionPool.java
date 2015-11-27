@@ -213,7 +213,7 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 				ThriftConnection<T> connection = obtainRawInternalConnection(thriftServerInfo);
 				connection.close();
 			} catch (Exception e) {
-				throw new ThriftConnectionPoolException(e);
+				return false;
 			}
 			ThriftConnectionPartition<T> thriftConnectionPartition = createThriftConnectionPartition(thriftServerInfo);
 
