@@ -86,3 +86,6 @@
  2、补充性能测试<br/>
  3、完善使用例子<br/>
  4、操作重试机制?<br/>
+
+
+[![Join the chat at https://gitter.im/wmz7year/Thrift-Connection-Pool](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/wmz7year/Thrift-Connection-Pool?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
