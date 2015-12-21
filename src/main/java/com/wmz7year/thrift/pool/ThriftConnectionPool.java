@@ -213,6 +213,8 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 				ThriftConnection<T> connection = obtainRawInternalConnection(thriftServerInfo);
 				connection.close();
 			} catch (Exception e) {
+				logger.error("无法添加Thrfit服务器到连接池 ip:" + thriftServerInfo.getHost() + " 端口：" + thriftServerInfo.getPort(),
+						e);
 				return false;
 			}
 			ThriftConnectionPartition<T> thriftConnectionPartition = createThriftConnectionPartition(thriftServerInfo);
