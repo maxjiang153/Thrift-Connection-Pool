@@ -435,7 +435,7 @@ public class ThriftConnectionPoolConfig {
 			throw new ThriftConnectionPoolException("每台服务器最小连接数不能小于0");
 		}
 
-		if (minConnectionPerServer > maxConnectionAgeInSeconds) {
+		if (minConnectionPerServer > maxConnectionPerServer) {
 			throw new ThriftConnectionPoolException("每台服务器的最小连接数不能超过最大连接数配置");
 		}
 
