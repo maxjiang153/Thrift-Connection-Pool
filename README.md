@@ -1,6 +1,7 @@
 #Thrift连接池实现
 
 [![Join the chat at https://gitter.im/wmz7year/Thrift-Connection-Pool](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/wmz7year/Thrift-Connection-Pool?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/wmz7year/Thrift-Connection-Pool.svg)](https://travis-ci.org/wmz7year/Thrift-Connection-Pool) 
 
 ##特性	
 * 1、支持服务器之间的负载均衡<br/>
