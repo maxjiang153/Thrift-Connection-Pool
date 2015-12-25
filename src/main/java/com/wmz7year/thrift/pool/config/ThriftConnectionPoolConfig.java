@@ -37,10 +37,7 @@ import com.wmz7year.thrift.pool.exception.ThriftConnectionPoolException;
 /**
  * thrift连接池配置类<br>
  * 
- * @Title: ThriftConnectionPoolConfig.java
- * @Package com.wmz7year.thrift.pool.config
  * @author jiangwei (ydswcy513@gmail.com)
- * @date 2015年11月18日 上午9:43:35
  * @version V1.0
  */
 public class ThriftConnectionPoolConfig {
@@ -471,10 +468,7 @@ public class ThriftConnectionPoolConfig {
 	/**
 	 * thrift 通讯管道类型
 	 * 
-	 * @Title: ThriftConnectionPoolConfig.java
-	 * @Package com.wmz7year.thrift.pool.config
 	 * @author jiangwei (ydswcy513@gmail.com)
-	 * @date 2015年11月18日 上午10:03:00
 	 * @version V1.0
 	 */
 	public enum TProtocolType {
@@ -492,10 +486,7 @@ public class ThriftConnectionPoolConfig {
 	 * 队列模式<br>
 	 * 先进先出还是先进后出
 	 * 
-	 * @Title: ThriftConnectionPoolConfig.java
-	 * @Package com.wmz7year.thrift.pool.config
 	 * @author jiangwei (ydswcy513@gmail.com)
-	 * @date 2015年11月18日 下午1:20:47
 	 * @version V1.0
 	 */
 	public enum ServiceOrder {
@@ -506,10 +497,7 @@ public class ThriftConnectionPoolConfig {
 	 * thrift服务类型<br>
 	 * 单接口模式还是多接口模式
 	 * 
-	 * @Title: ThriftConnectionPoolConfig.java
-	 * @Package com.wmz7year.thrift.pool.config
 	 * @author jiangwei (ydswcy513@gmail.com)
-	 * @date 2015年11月20日 上午10:10:27
 	 * @version V1.0
 	 */
 	public enum ThriftServiceType {

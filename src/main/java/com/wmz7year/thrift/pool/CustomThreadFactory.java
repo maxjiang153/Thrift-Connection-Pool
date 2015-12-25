@@ -26,10 +26,7 @@ import org.slf4j.LoggerFactory;
  * 负责创建线程的工厂类<br>
  * 用于设置线程名称以及异常捕获
  * 
- * @Title: CustomThreadFactory.java
- * @Package com.wmz7year.thrift.pool
  * @author jiangwei (ydswcy513@gmail.com)
- * @date 2015年11月18日 上午11:27:53
  * @version V1.0
  */
 public class CustomThreadFactory implements ThreadFactory, UncaughtExceptionHandler {

@@ -39,10 +39,7 @@ import com.wmz7year.thrift.pool.exception.ThriftConnectionPoolException;
 /**
  * 多服务支持的thrift连接对象
  * 
- * @Title: MulitServiceThriftConnecion.java
- * @Package com.wmz7year.thrift.pool.connection
  * @author jiangwei (ydswcy513@gmail.com)
- * @date 2015年11月20日 上午10:59:44
  * @version V1.0
  */
 public class MulitServiceThriftConnecion<T extends TServiceClient> implements ThriftConnection<T> {

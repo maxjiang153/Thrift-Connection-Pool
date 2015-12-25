@@ -35,10 +35,7 @@ import com.wmz7year.thrift.pool.exception.ThriftConnectionPoolException;
  * 每台服务器都意味着一个连接分区<br>
  * 不同服务器之间的分区是各自独立的
  * 
- * @Title: ThriftConnectionPartition.java
- * @Package com.wmz7year.thrift.pool
  * @author jiangwei (ydswcy513@gmail.com)
- * @date 2015年11月18日 上午11:35:07
  * @version V1.0
  */
 public class ThriftConnectionPartition<T extends TServiceClient> implements Serializable {
@@ -139,6 +136,7 @@ public class ThriftConnectionPartition<T extends TServiceClient> implements Seri
 	 * @param thriftConnectionHandle
 	 *            thrift连接代理对象
 	 * @throws ThriftConnectionPoolException
+	 *             当向连接分区添加空闲连接出现问题时抛出该异常
 	 */
 	public void addFreeConnection(ThriftConnectionHandle<T> thriftConnectionHandle)
 			throws ThriftConnectionPoolException {

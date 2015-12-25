@@ -22,10 +22,7 @@ import java.io.PrintWriter;
 /**
  * thrift连接池相关的异常对象
  * 
- * @Title: ThriftConnectionPoolException.java
- * @Package com.wmz7year.thrift.pool.exception
  * @author jiangwei (ydswcy513@gmail.com)
- * @date 2015年11月18日 上午9:57:55
  * @version V1.0
  */
 public class ThriftConnectionPoolException extends Exception {

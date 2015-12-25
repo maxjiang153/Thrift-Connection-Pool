@@ -29,10 +29,7 @@ import com.wmz7year.thrift.pool.exception.ThriftConnectionPoolException;
  * 连接测试线程<br>
  * 用于测试分区中的连接可用性
  * 
- * @Title: ThriftConnectionTesterThread.java
- * @Package com.wmz7year.thrift.pool
  * @author jiangwei (ydswcy513@gmail.com)
- * @date 2015年11月18日 下午1:17:20
  * @version V1.0
  */
 public class ThriftConnectionTesterThread<T extends TServiceClient> extends TimerTask {

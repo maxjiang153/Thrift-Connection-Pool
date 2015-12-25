@@ -34,10 +34,7 @@ import com.wmz7year.thrift.pool.exception.ThriftConnectionPoolException;
 /**
  * 默认实现的thrift客户端对象
  * 
- * @Title: DefaultThriftConnection.java
- * @Package com.wmz7year.thrift.pool.connection
- * @author jiangwei (jiangwei@1318.com)
- * @date 2015年11月18日 下午1:37:59
+ * @author jiangwei (ydswcy513@gmail.com)
  * @version V1.0
  */
 public class DefaultThriftConnection<T extends TServiceClient> implements ThriftConnection<T> {

@@ -21,10 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * 连接获取失败时重试配置
  * 
- * @Title: AcquireFailConfig.java
- * @Package com.wmz7year.thrift.pool
- * @author jiangwei (jiangwei@1318.com)
- * @date 2015年11月18日 下午2:01:47
+ * @author jiangwei (ydswcy513@gmail.com)
  * @version V1.0
  */
 public class AcquireFailConfig {

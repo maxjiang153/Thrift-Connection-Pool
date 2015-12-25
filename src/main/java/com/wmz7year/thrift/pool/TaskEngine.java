@@ -27,10 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * 线程调度任务引擎<br>
  * 负责执行线程或者定时执行线程等操作
  * 
- * @Title: TaskEngine.java
- * @Package com.laimiya.push.util
  * @author jiangwei (ydswcy513@gmail.com)
- * @date 2015年11月17日 下午5:37:48
  * @version V1.0
  */
 public class TaskEngine {
@@ -42,7 +39,7 @@ public class TaskEngine {
 	 * @return a task engine.
 	 */
 	public static synchronized TaskEngine getInstance() {
-		if(instance == null){
+		if (instance == null) {
 			instance = new TaskEngine();
 		}
 		return instance;
@@ -321,7 +318,7 @@ public class TaskEngine {
 			timer.cancel();
 			timer = null;
 		}
-		
+
 		instance = null;
 	}
 
