@@ -1,12 +1,26 @@
-<h1>Thrift连接池实现</h1>
+#Thrift连接池实现
 
-目标：<br/>
-  1、支持池化管理thrift客户端连接<br/>
-  2、支持thrift服务器的负载均衡<br/>
-  3、支持thrift服务器列表的动态管理<br/>
+[![Join the chat at https://gitter.im/wmz7year/Thrift-Connection-Pool](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/wmz7year/Thrift-Connection-Pool?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-<h1>示例</h1>
-<h3>单服务示例</h3>
+##特性	
+* 1、支持服务器之间的负载均衡<br/>
+* 2、每个服务器拥有一个独立的连接分区 所有的连接分区合并一起为整个连接池<br/>
+* 3、连接池支持自动创建连接、管理超时连接、管理失效连接<br/>
+* 4、支持服务器列表动态增加或者移除<br/>
+* 5、支持自动调取ping方法(在thrift描述文件添加方法void ping(),)检测连接可用性<br/>
+* 6、支持当服务不可用时自动将对应的服务器剔除连接池的功能<br/>
+* 7、添加多服务接口支持<br/>
+
+###下载
+>&lt;dependency&gt;     
+>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&lt;groupId&gt;com.github.wmz7year&lt;/groupId&gt;    
+>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&lt;artifactId&gt;ThriftConnectionPool&lt;/artifactId&gt;    
+>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&lt;version&gt;1.0.4-RELEASE&lt;/version&gt;    
+>&lt;/dependency&gt;
+	
+	
+###示例
+####单服务示例
 	ThriftConnectionPoolConfig config = new ThriftConnectionPoolConfig();
 	config.setConnectTimeout(3000);
 	config.setThriftProtocol(TProtocolType.BINARY);
@@ -30,7 +44,7 @@
 		e.printStackTrace();
 	}
 
-<h3>多接口服务示例</h3>
+####多接口服务示例
 	ThriftConnectionPoolConfig config = new ThriftConnectionPoolConfig(ThriftServiceType.MULTIPLEXED_INTERFACE);
 	config.setConnectTimeout(3000);
 	config.setThriftProtocol(TProtocolType.BINARY);
@@ -65,27 +79,12 @@
 	otherServiceClient.ping();
 	pool.close();
 
-<h1>使用</h1>
-	<dependency>
-    		<groupId>com.github.wmz7year</groupId>
-    		<artifactId>ThriftConnectionPool</artifactId>
-    		<version>1.0.4-RELEASE</version>
-	</dependency>
-	
-<h1>特性</h1>	
-  1、支持服务器之间的负载均衡<br/>
-  2、每个服务器拥有一个独立的连接分区 所有的连接分区合并一起为整个连接池<br/>
-  3、连接池支持自动创建连接、管理超时连接、管理失效连接<br/>
-  4、支持服务器列表动态增加或者移除<br/>
-  5、支持自动调取ping方法(在thrift描述文件添加方法void ping(),)检测连接可用性<br/>
-  6、支持当服务不可用时自动将对应的服务器剔除连接池的功能<br/>
-  7、添加多服务接口支持<br/>
 
-<h1>接下来需要完善内容：</h1>
+
+####接下来需要完善内容：
  1、补充文档<br/>
  2、补充性能测试<br/>
  3、完善使用例子<br/>
  4、操作重试机制?<br/>
 
 
-[![Join the chat at https://gitter.im/wmz7year/Thrift-Connection-Pool](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/wmz7year/Thrift-Connection-Pool?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
