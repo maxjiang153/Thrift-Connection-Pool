@@ -28,10 +28,7 @@ import com.wmz7year.thrift.pool.exception.ThriftConnectionPoolException;
 /**
  * 连接操作策略接口抽象实现类
  * 
- * @Title: AbstractThriftConnectionStrategy.java
- * @Package com.wmz7year.thrift.pool
  * @author jiangwei (ydswcy513@gmail.com)
- * @date 2015年11月18日 下午3:43:58
  * @version V1.0
  */
 public abstract class AbstractThriftConnectionStrategy<T extends TServiceClient>
@@ -48,11 +45,11 @@ public abstract class AbstractThriftConnectionStrategy<T extends TServiceClient>
 	protected Lock terminationLock = new ReentrantLock();
 
 	/**
-	 * Prep for a new connection
+	 * 准备一个新连接的方法
 	 * 
-	 * @return if stats are enabled, return the nanoTime when this connection
-	 *         was requested.
-	 * @throws SQLException
+	 * @return 如果启动统计 返回获取连接的时间
+	 * @throws ThriftConnectionPoolException
+	 *             当获取连接出现问题时抛出该异常
 	 */
 	protected long preConnection() throws ThriftConnectionPoolException {
 		long statsObtainTime = 0;
@@ -65,14 +62,16 @@ public abstract class AbstractThriftConnectionStrategy<T extends TServiceClient>
 	}
 
 	/**
-	 * After obtaining a connection, perform additional tasks.
+	 * 获取连接后执行其他任务
 	 * 
 	 * @param handle
+	 *            连接代理类
 	 * @param statsObtainTime
+	 *            准备获取连接的时间
 	 */
 	protected void postConnection(ThriftConnectionHandle<T> handle, long statsObtainTime) {
 
-		handle.renewConnection(); // mark it as being logically "open"
+		handle.renewConnection(); // 重置连接代理类中的信息 变成新连接
 
 	}
 
@@ -112,6 +111,7 @@ public abstract class AbstractThriftConnectionStrategy<T extends TServiceClient>
 	 * 
 	 * @return thrift服务器连接对象
 	 * @throws ThriftConnectionPoolException
+	 *             当获取连接出现问题时抛出该异常
 	 */
 	protected abstract ThriftConnection<T> getConnectionInternal() throws ThriftConnectionPoolException;
 
@@ -122,9 +122,9 @@ public abstract class AbstractThriftConnectionStrategy<T extends TServiceClient>
 	 *            thrift服务器节点ID
 	 * @return thrift服务器连接对象
 	 * @throws ThriftConnectionPoolException
+	 *             当获取连接出现问题时抛出该异常
 	 */
-	protected abstract ThriftConnection<T> getConnectionInternal(byte[] nodeID)
-			throws ThriftConnectionPoolException;
+	protected abstract ThriftConnection<T> getConnectionInternal(byte[] nodeID) throws ThriftConnectionPoolException;
 
 	/*
 	 * @see

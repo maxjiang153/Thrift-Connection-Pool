@@ -27,10 +27,7 @@ import com.wmz7year.thrift.pool.config.ThriftConnectionPoolConfig.ServiceOrder;
 /**
  * thrift连接最大时间检测线程
  * 
- * @Title: ThriftConnectionMaxAgeThread.java
- * @Package com.wmz7year.thrift.pool
  * @author jiangwei (ydswcy513@gmail.com)
- * @date 2015年11月18日 下午1:24:42
  * @version V1.0
  */
 public class ThriftConnectionMaxAgeThread<T extends TServiceClient> extends TimerTask {

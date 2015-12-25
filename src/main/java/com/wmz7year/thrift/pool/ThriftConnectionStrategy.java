@@ -24,10 +24,7 @@ import com.wmz7year.thrift.pool.exception.ThriftConnectionPoolException;
 /**
  * 连接操作策略接口
  * 
- * @Title: ThriftConnectionStrategy.java
- * @Package com.wmz7year.thrift.pool
  * @author jiangwei (ydswcy513@gmail.com)
- * @date 2015年11月18日 下午3:40:14
  * @version V1.0
  */
 public interface ThriftConnectionStrategy<T extends TServiceClient> {

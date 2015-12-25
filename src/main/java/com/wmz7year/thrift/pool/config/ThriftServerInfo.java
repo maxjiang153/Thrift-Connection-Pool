@@ -23,10 +23,7 @@ import java.util.Arrays;
  * 目前只有服务器地址、端口两个属性<br>
  * 日后考虑添加权重、备注一类的属性
  * 
- * @Title: ThriftServerInfo.java
- * @Package com.wmz7year.thrift.pool.config
  * @author jiangwei (ydswcy513@gmail.com)
- * @date 2015年11月18日 上午10:54:42
  * @version V1.0
  */
 public class ThriftServerInfo {

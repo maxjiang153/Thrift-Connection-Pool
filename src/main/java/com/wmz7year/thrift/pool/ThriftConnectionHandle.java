@@ -35,10 +35,7 @@ import com.wmz7year.thrift.pool.exception.ThriftConnectionPoolException;
  * thrift连接代理类<br>
  * 
  * 
- * @Title: ThriftConnectionHandle.java
- * @Package com.wmz7year.thrift.pool
  * @author jiangwei (ydswcy513@gmail.com)
- * @date 2015年11月18日 上午11:40:26
  * @version V1.0
  */
 public class ThriftConnectionHandle<T extends TServiceClient> implements ThriftConnection<T>, Serializable {
@@ -262,6 +259,9 @@ public class ThriftConnectionHandle<T extends TServiceClient> implements ThriftC
 
 	/**
 	 * 关闭代理对象中的原始连接的方法
+	 * 
+	 * @throws ThriftConnectionPoolException
+	 *             当关闭连接出现问题抛出该异常
 	 */
 	public void internalClose() throws ThriftConnectionPoolException {
 		try {

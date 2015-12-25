@@ -23,10 +23,7 @@ import org.slf4j.LoggerFactory;
 /**
  * 连接池内部连接数量监控线程
  * 
- * @Title: PoolWatchThread.java
- * @Package com.wmz7year.thrift.pool
  * @author jiangwei (ydswcy513@gmail.com)
- * @date 2015年11月18日 下午1:30:01
  * @version V1.0
  */
 public class PoolWatchThread<T extends TServiceClient> implements Runnable {

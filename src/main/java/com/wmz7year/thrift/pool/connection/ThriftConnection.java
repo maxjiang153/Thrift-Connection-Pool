@@ -23,10 +23,7 @@ import org.apache.thrift.TServiceClient;
 /**
  * Thrift连接对象
  * 
- * @Title: ThriftConnection.java
- * @Package com.wmz7year.thrift.pool.connection
  * @author jiangwei (ydswcy513@gmail.com)
- * @date 2015年11月18日 上午11:08:06
  * @version V1.0
  */
 public interface ThriftConnection<T extends TServiceClient> extends Closeable {
@@ -44,8 +41,12 @@ public interface ThriftConnection<T extends TServiceClient> extends Closeable {
 	 * 在多服务情况下试用 如果在单服务情况下试用则直接返回客户端<br>
 	 * 如果服务名错误则返回null
 	 * 
+	 * @param <K>
+	 *            thrift客户端类
 	 * @param serviceName
 	 *            服务名称
+	 * @param clazz
+	 *            thrift客户端class类
 	 * @return 客户端对象
 	 */
 	public <K extends TServiceClient> K getClient(String serviceName, Class<K> clazz);

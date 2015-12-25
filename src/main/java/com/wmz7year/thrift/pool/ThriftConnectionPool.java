@@ -53,10 +53,7 @@ import com.wmz7year.thrift.pool.exception.ThriftConnectionPoolException;
 /**
  * thrift连接池主类
  * 
- * @Title: ThriftConnectionPool.java
- * @Package com.wmz7year.thrift.pool
  * @author jiangwei (ydswcy513@gmail.com)
- * @date 2015年11月18日 上午9:54:53
  * @version V1.0
  */
 public class ThriftConnectionPool<T extends TServiceClient> implements Serializable, Closeable {
@@ -204,6 +201,8 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 	 * @param thriftServerInfo
 	 *            需要添加的服务器信息
 	 * @return true为添加成功 false为添加失败
+	 * @throws ThriftConnectionPoolException
+	 *             当添加thrift服务器出现问题时抛出该异常
 	 */
 	public boolean addThriftServer(ThriftServerInfo thriftServerInfo) throws ThriftConnectionPoolException {
 		serverListLock.writeLock().lock();
@@ -460,8 +459,10 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 	 * 获取一个thrift原始连接对象的方法
 	 * 
 	 * @param thriftConnectionHandle
-	 * @return
+	 *            thrift连接代理类对象
+	 * @return thrift连接对象
 	 * @throws ThriftConnectionPoolException
+	 *             当获取连接出现问题时抛出该异常
 	 */
 	public ThriftConnection<T> obtainInternalConnection(ThriftConnectionHandle<T> thriftConnectionHandle)
 			throws ThriftConnectionPoolException {
@@ -545,7 +546,7 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 	/**
 	 * 将连接代理对象回收到连接池中的方法
 	 * 
-	 * @param handle
+	 * @param connectionHandle
 	 *            连接代理对象
 	 * @throws ThriftConnectionPoolException
 	 *             回收过程中可能产生的异常

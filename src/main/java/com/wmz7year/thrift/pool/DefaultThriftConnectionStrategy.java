@@ -31,10 +31,7 @@ import com.wmz7year.thrift.pool.exception.ThriftConnectionPoolException;
 /**
  * 默认连接池获取策略实现类
  * 
- * @Title: DefaultThriftConnectionStrategy.java
- * @Package com.wmz7year.thrift.pool
  * @author jiangwei (ydswcy513@gmail.com)
- * @date 2015年11月18日 下午3:50:58
  * @version V1.0
  */
 public class DefaultThriftConnectionStrategy<T extends TServiceClient> extends AbstractThriftConnectionStrategy<T> {
