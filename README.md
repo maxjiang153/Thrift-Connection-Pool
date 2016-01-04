@@ -16,7 +16,7 @@
 >&lt;dependency&gt;     
 >&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&lt;groupId&gt;com.github.wmz7year&lt;/groupId&gt;    
 >&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&lt;artifactId&gt;ThriftConnectionPool&lt;/artifactId&gt;    
->&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&lt;version&gt;1.0.4-RELEASE&lt;/version&gt;    
+>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&lt;version&gt;1.0.5-RELEASE&lt;/version&gt;    
 >&lt;/dependency&gt;
 	
 	
