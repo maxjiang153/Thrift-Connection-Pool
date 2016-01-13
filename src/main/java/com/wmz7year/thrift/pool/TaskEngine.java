@@ -50,7 +50,7 @@ public class TaskEngine {
 	private Map<TimerTask, TimerTaskWrapper> wrappedTasks = new ConcurrentHashMap<TimerTask, TimerTaskWrapper>();
 
 	private TaskEngine() {
-		timer = new Timer("TaskEngine-timer", true);
+		timer = new Timer("ThriftConnectionPool-TaskEngine-timer", true);
 		executor = Executors.newCachedThreadPool(new ThreadFactory() {
 
 			final AtomicInteger threadNumber = new AtomicInteger(1);
@@ -59,7 +59,7 @@ public class TaskEngine {
 			public Thread newThread(Runnable runnable) {
 				// Use our own naming scheme for the threads.
 				Thread thread = new Thread(Thread.currentThread().getThreadGroup(), runnable,
-						"TaskEngine-pool-" + threadNumber.getAndIncrement(), 0);
+						"ThriftConnectionPool-TaskEngine-pool-" + threadNumber.getAndIncrement(), 0);
 				// Make workers daemon threads.
 				thread.setDaemon(true);
 				if (thread.getPriority() != Thread.NORM_PRIORITY) {
