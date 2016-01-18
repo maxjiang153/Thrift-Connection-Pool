@@ -221,10 +221,13 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 			partitions.add(thriftConnectionPartition);
 			thriftServers.add(thriftServerInfo);
 			thriftServerCount = partitions.size();
+			return true;
+		} catch (Exception e) {
+			logger.error("无法添加Thrfit服务器到连接池 ip:" + thriftServerInfo.getHost() + " 端口：" + thriftServerInfo.getPort(), e);
+			return false;
 		} finally {
 			serverListLock.writeLock().unlock();
 		}
-		return true;
 	}
 
 	/**
@@ -264,6 +267,9 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 					return true;
 				}
 			}
+		} catch (Exception e) {
+			logger.error("移除Thrift服务器失败  ip:" + thriftServerInfo.getHost() + " 端口：" + thriftServerInfo.getPort());
+			return false;
 		} finally {
 			serverListLock.writeLock().unlock();
 		}
