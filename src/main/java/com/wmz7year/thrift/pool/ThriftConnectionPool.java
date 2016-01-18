@@ -61,7 +61,7 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 	private static final long serialVersionUID = 6524222103868846620L;
 
 	/**
-	 * 连接池配置对象SphinxConnectionPool
+	 * 连接池配置对象
 	 */
 	private ThriftConnectionPoolConfig config;
 
