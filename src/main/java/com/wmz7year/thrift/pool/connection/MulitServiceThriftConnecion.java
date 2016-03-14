@@ -118,7 +118,8 @@ public class MulitServiceThriftConnecion<T extends TServiceClient> implements Th
 			}
 
 		} catch (Exception e) {
-			throw new ThriftConnectionPoolException("无法连接服务器：" + host + " 端口：" + port);
+			e.printStackTrace();
+			throw new ThriftConnectionPoolException("无法连接服务器：" + host + " 端口：" + port, e);
 		}
 	}
 

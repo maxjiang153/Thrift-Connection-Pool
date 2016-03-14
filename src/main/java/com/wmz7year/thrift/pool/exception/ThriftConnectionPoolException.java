@@ -39,11 +39,12 @@ public class ThriftConnectionPoolException extends Exception {
 	}
 
 	public ThriftConnectionPoolException(Throwable nestedThrowable) {
+		super(nestedThrowable);
 		this.nestedThrowable = nestedThrowable;
 	}
 
 	public ThriftConnectionPoolException(String msg, Throwable nestedThrowable) {
-		super(msg);
+		super(msg, nestedThrowable);
 		this.nestedThrowable = nestedThrowable;
 	}
 
