@@ -244,13 +244,11 @@ public class ThriftConnectionPartition<T extends TServiceClient> implements Seri
 	 * @return 连接代理对象
 	 */
 	protected ThriftConnectionHandle<T> poolFreeConnection() {
-		ThriftConnectionHandle<T> result = this.freeConnections.poll();
-		return result;
+		return this.freeConnections.poll();
 	}
 
 	public ThriftConnection<T> poolFreeConnection(long timeout, TimeUnit unit) throws InterruptedException {
-		ThriftConnection<T> result = this.freeConnections.poll(timeout, unit);
-		return result;
+		return this.freeConnections.poll(timeout, unit);
 	}
 
 	/**
