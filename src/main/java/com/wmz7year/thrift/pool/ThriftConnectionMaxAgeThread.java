@@ -64,7 +64,7 @@ public class ThriftConnectionMaxAgeThread<T extends TServiceClient> extends Time
 	 */
 	@Override
 	public void run() {
-		ThriftConnectionHandle<T> connection = null;
+		ThriftConnectionHandle<T> connection;
 		long tmp;
 		long nextCheckInMs = this.maxConnectionAge;
 

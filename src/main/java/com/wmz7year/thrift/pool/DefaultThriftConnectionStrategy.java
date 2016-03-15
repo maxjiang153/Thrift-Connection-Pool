@@ -140,7 +140,7 @@ public class DefaultThriftConnectionStrategy<T extends TServiceClient> extends A
 	 */
 	@Override
 	public ThriftConnection<T> pollConnection() {
-		ThriftConnection<T> result = null;
+		ThriftConnection<T> result;
 		if (pool.getThriftServerCount() == 0) {
 			throw new IllegalStateException("当前无可用连接服务器");
 		}
