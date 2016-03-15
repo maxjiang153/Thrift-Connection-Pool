@@ -74,7 +74,7 @@ public class MulitServiceThriftConnecion<T extends TServiceClient> implements Th
 	/**
 	 * 实例化后的客户端对象
 	 */
-	private Map<String, T> clients = new HashMap<String, T>();
+	private Map<String, T> clients = new HashMap<>();
 
 	public MulitServiceThriftConnecion(String host, int port, int connectionTimeOut, TProtocolType tProtocolType,
 			Map<String, Class<? extends TServiceClient>> thriftClientClasses) throws ThriftConnectionPoolException {

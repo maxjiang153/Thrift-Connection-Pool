@@ -165,7 +165,7 @@ public class ThriftConnectionHandle<T extends TServiceClient> implements ThriftC
 	 *             当产生错误时抛出该异常
 	 */
 	public ThriftConnectionHandle<T> recreateConnectionHandle() throws ThriftConnectionPoolException {
-		ThriftConnectionHandle<T> handle = new ThriftConnectionHandle<T>(this.thriftConnection,
+		ThriftConnectionHandle<T> handle = new ThriftConnectionHandle<>(this.thriftConnection,
 				this.thriftConnectionPartition, this.thriftConnectionPool, true);
 		handle.thriftConnectionPartition = this.thriftConnectionPartition;
 		handle.connectionCreationTimeInMs = this.connectionCreationTimeInMs;
