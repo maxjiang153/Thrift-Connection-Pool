@@ -85,7 +85,7 @@ public class PoolWatchThread<T extends TServiceClient> implements Runnable {
 	 */
 	@Override
 	public void run() {
-		int maxNewConnections = 0;
+		int maxNewConnections;
 
 		while (run) {
 			maxNewConnections = 0;

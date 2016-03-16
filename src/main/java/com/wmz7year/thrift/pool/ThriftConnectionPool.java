@@ -351,7 +351,7 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 	private ThriftConnection<T> obtainRawInternalConnection(ThriftServerInfo serverInfo)
 			throws ThriftConnectionPoolException {
 		// 判断单服务还是多服务模式
-		ThriftConnection<T> connection = null;
+		ThriftConnection<T> connection;
 		if (this.thriftServiceType == ThriftServiceType.SINGLE_INTERFACE) {
 			connection = new DefaultThriftConnection<T>(serverInfo.getHost(), serverInfo.getPort(),
 					this.connectionTimeOut, this.config.getThriftProtocol(), this.config.getClientClass());
@@ -472,8 +472,8 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 	 */
 	public ThriftConnection<T> obtainInternalConnection(ThriftConnectionHandle<T> thriftConnectionHandle)
 			throws ThriftConnectionPoolException {
-		boolean tryAgain = false;
-		ThriftConnection<T> result = null;
+		boolean tryAgain;
+		ThriftConnection<T> result;
 		ThriftConnection<T> oldRawConnection = thriftConnectionHandle.getInternalConnection();
 		ThriftServerInfo thriftServerInfo = thriftConnectionHandle.getThriftServerInfo();
 
