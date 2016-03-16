@@ -65,12 +65,12 @@ public class ThriftConnectionPoolConfig {
 	/**
 	 * 多服务情况下的客户端列表
 	 */
-	private Map<String, Class<? extends TServiceClient>> clientClasses = new HashMap<String, Class<? extends TServiceClient>>();
+	private Map<String, Class<? extends TServiceClient>> clientClasses = new HashMap<>();
 
 	/**
 	 * 配置的服务器列表
 	 */
-	private Collection<ThriftServerInfo> thriftServers = new HashSet<ThriftServerInfo>();
+	private Collection<ThriftServerInfo> thriftServers = new HashSet<>();
 
 	/**
 	 * 是否是懒加载连接
@@ -221,7 +221,7 @@ public class ThriftConnectionPoolConfig {
 	 * @return thrift服务器列表集合
 	 */
 	public List<ThriftServerInfo> getThriftServers() {
-		List<ThriftServerInfo> servers = new ArrayList<ThriftServerInfo>();
+		List<ThriftServerInfo> servers = new ArrayList<>();
 		servers.addAll(thriftServers);
 		return servers;
 	}
@@ -403,7 +403,7 @@ public class ThriftConnectionPoolConfig {
 				throw new ThriftConnectionPoolException("多服务thrift客户端实现类未设置");
 			}
 			// 检测所有接口
-			List<String> toRemoveClasses = new ArrayList<String>();
+			List<String> toRemoveClasses = new ArrayList<>();
 			Iterator<Entry<String, Class<? extends TServiceClient>>> iterator = clientClasses.entrySet().iterator();
 			while (iterator.hasNext()) {
 				Entry<String, Class<? extends TServiceClient>> entry = iterator.next();

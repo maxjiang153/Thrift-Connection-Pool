@@ -144,7 +144,7 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 		// 判断是否是懒加载 如果是则验证连接
 		if (!this.config.isLazyInit()) {
 			// 需要删除的服务器列表
-			List<ThriftServerInfo> needToDelete = new ArrayList<ThriftServerInfo>();
+			List<ThriftServerInfo> needToDelete = new ArrayList<>();
 
 			// 尝试获取一个连接
 			for (int i = 0; i < thriftServerCount; i++) {
@@ -176,10 +176,10 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 		TaskEngine.getInstance();
 
 		// 创建分区列表
-		this.partitions = new ArrayList<ThriftConnectionPartition<T>>(thriftServerCount);
+		this.partitions = new ArrayList<>(thriftServerCount);
 
 		this.poolAvailabilityThreshold = this.config.getPoolAvailabilityThreshold();
-		this.connectionStrategy = new DefaultThriftConnectionStrategy<T>(this);
+		this.connectionStrategy = new DefaultThriftConnectionStrategy<>(this);
 		this.connectionTimeoutInMs = this.config.getConnectionTimeoutInMs();
 		this.thriftServiceType = this.config.getThriftServiceType();
 
@@ -251,7 +251,7 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 				ThriftConnectionPartition<T> thriftConnectionPartition = iterator.next();
 				if (thriftConnectionPartition.getThriftServerInfo().equals(thriftServerInfo)) {
 					thriftConnectionPartition.setUnableToCreateMoreTransactions(false);
-					List<ThriftConnectionHandle<T>> clist = new LinkedList<ThriftConnectionHandle<T>>();
+					List<ThriftConnectionHandle<T>> clist = new LinkedList<>();
 					thriftConnectionPartition.getFreeConnections().drainTo(clist);
 					for (ThriftConnectionHandle<T> c : clist) {
 						destroyConnection(c);
@@ -290,10 +290,10 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 		// 队列模式
 		ServiceOrder serviceOrder = this.config.getServiceOrder();
 
-		ThriftConnectionPartition<T> thriftConnectionPartition = new ThriftConnectionPartition<T>(this,
+		ThriftConnectionPartition<T> thriftConnectionPartition = new ThriftConnectionPartition<>(this,
 				thriftServerInfo);
 		// 添加空闲连接队列
-		BlockingQueue<ThriftConnectionHandle<T>> connectionHandles = new LinkedBlockingQueue<ThriftConnectionHandle<T>>(
+		BlockingQueue<ThriftConnectionHandle<T>> connectionHandles = new LinkedBlockingQueue<>(
 				this.config.getMaxConnectionPerServer());
 		thriftConnectionPartition.setFreeConnections(connectionHandles);
 
@@ -353,10 +353,10 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 		// 判断单服务还是多服务模式
 		ThriftConnection<T> connection;
 		if (this.thriftServiceType == ThriftServiceType.SINGLE_INTERFACE) {
-			connection = new DefaultThriftConnection<T>(serverInfo.getHost(), serverInfo.getPort(),
+			connection = new DefaultThriftConnection<>(serverInfo.getHost(), serverInfo.getPort(),
 					this.connectionTimeOut, this.config.getThriftProtocol(), this.config.getClientClass());
 		} else {
-			connection = new MulitServiceThriftConnecion<T>(serverInfo.getHost(), serverInfo.getPort(),
+			connection = new MulitServiceThriftConnecion<>(serverInfo.getHost(), serverInfo.getPort(),
 					this.connectionTimeOut, this.config.getThriftProtocol(), this.config.getThriftClientClasses());
 		}
 		return connection;
@@ -706,7 +706,7 @@ public class ThriftConnectionPool<T extends TServiceClient> implements Serializa
 		} finally {
 			serverListLock.writeLock().unlock();
 		}
-		List<ThriftConnectionHandle<T>> clist = new LinkedList<ThriftConnectionHandle<T>>();
+		List<ThriftConnectionHandle<T>> clist = new LinkedList<>();
 		thriftConnectionPartition.getFreeConnections().drainTo(clist);
 		for (ThriftConnectionHandle<T> c : clist) {
 			destroyConnection(c);

@@ -123,7 +123,7 @@ public class DefaultThriftConnectionStrategy<T extends TServiceClient> extends A
 		try {
 			for (int i = 0; i < this.pool.thriftServerCount; i++) {
 				this.pool.partitions.get(i).setUnableToCreateMoreTransactions(false);
-				List<ThriftConnectionHandle<T>> clist = new LinkedList<ThriftConnectionHandle<T>>();
+				List<ThriftConnectionHandle<T>> clist = new LinkedList<>();
 				this.pool.partitions.get(i).getFreeConnections().drainTo(clist);
 				for (ThriftConnectionHandle<T> c : clist) {
 					this.pool.destroyConnection(c);

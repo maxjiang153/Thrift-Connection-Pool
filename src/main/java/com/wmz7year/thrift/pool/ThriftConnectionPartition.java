@@ -80,7 +80,7 @@ public class ThriftConnectionPartition<T extends TServiceClient> implements Seri
 	/**
 	 * 连接检测操作信号处理队列
 	 */
-	private BlockingQueue<Object> poolWatchThreadSignalQueue = new ArrayBlockingQueue<Object>(1);
+	private BlockingQueue<Object> poolWatchThreadSignalQueue = new ArrayBlockingQueue<>(1);
 
 	/**
 	 * 连接测试线程

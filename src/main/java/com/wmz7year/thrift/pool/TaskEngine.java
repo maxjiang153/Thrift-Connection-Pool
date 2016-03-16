@@ -35,7 +35,7 @@ public class TaskEngine {
 
 	private Timer timer;
 	private ExecutorService executor;
-	private Map<TimerTask, TimerTaskWrapper> wrappedTasks = new ConcurrentHashMap<TimerTask, TimerTaskWrapper>();
+	private Map<TimerTask, TimerTaskWrapper> wrappedTasks = new ConcurrentHashMap<>();
 
 	private TaskEngine() {
 		timer = new Timer("ThriftConnectionPool-TaskEngine-timer", true);
