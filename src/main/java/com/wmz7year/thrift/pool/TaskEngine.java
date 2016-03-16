@@ -33,18 +33,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class TaskEngine {
 	private static TaskEngine instance = null;
 
-	/**
-	 * Returns a task engine instance (singleton).
-	 *
-	 * @return a task engine.
-	 */
-	public static synchronized TaskEngine getInstance() {
-		if (instance == null) {
-			instance = new TaskEngine();
-		}
-		return instance;
-	}
-
 	private Timer timer;
 	private ExecutorService executor;
 	private Map<TimerTask, TimerTaskWrapper> wrappedTasks = new ConcurrentHashMap<TimerTask, TimerTaskWrapper>();
@@ -68,6 +56,18 @@ public class TaskEngine {
 				return thread;
 			}
 		});
+	}
+
+	/**
+	 * Returns a task engine instance (singleton).
+	 *
+	 * @return a task engine.
+	 */
+	public static synchronized TaskEngine getInstance() {
+		if (instance == null) {
+			instance = new TaskEngine();
+		}
+		return instance;
 	}
 
 	/**
