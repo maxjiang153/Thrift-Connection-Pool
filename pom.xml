@@ -11,12 +11,16 @@
 	<url>https://github.com/wmz7year/Thrift-Connection-Pool/</url>
 
 	<description>Apache Thrift Client connection pool</description>
-	<inceptionYear>2015</inceptionYear>
+	<inceptionYear>2016</inceptionYear>
 
 	<developers>
 		<developer>
 			<name>Jiang wei</name>
 			<email>ydswcy513@gmail.com</email>
+		</developer>
+		<developer>
+			<name>George Kankava</name>
+			<email>george.kankava@devfactory.com</email>
 		</developer>
 	</developers>
 
