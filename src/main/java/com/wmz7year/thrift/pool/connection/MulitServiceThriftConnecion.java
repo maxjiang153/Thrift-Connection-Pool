@@ -187,4 +187,12 @@ public class MulitServiceThriftConnecion<T extends TServiceClient> implements Th
 		return this.clients;
 	}
 
+    /*
+     * @see com.wmz7year.thrift.pool.connection.ThriftConnection#setAvailable(boolean)
+     */
+    @Override
+    public void setAvailable(boolean available) {
+        throw new UnsupportedOperationException();
+    }
+
 }

@@ -81,6 +81,8 @@ public class ThriftConnectionHandle<T extends TServiceClient> implements ThriftC
 	protected boolean possiblyBroken;
 	/** 使用该连接的线程 */
 	protected Thread threadUsingConnection;
+	/** 连接是否出现问题需要关闭的标识位 */
+	private boolean available = true;
 
 	/**
 	 * 连接监控线程
@@ -122,7 +124,7 @@ public class ThriftConnectionHandle<T extends TServiceClient> implements ThriftC
 	@Override
 	public void close() throws IOException {
 		try {
-			if (this.logicallyClosed.compareAndSet(false, true)) {
+			if (this.logicallyClosed.compareAndSet(false, true) && available) {
 
 				// 中断连接监视线程
 				if (this.threadWatch != null) {
@@ -379,5 +381,13 @@ public class ThriftConnectionHandle<T extends TServiceClient> implements ThriftC
 	public long getConnectionLastResetInMs() {
 		return this.connectionLastResetInMs;
 	}
+
+    /*
+     * @see com.wmz7year.thrift.pool.connection.ThriftConnection#setAvailable(boolean)
+     */
+    @Override
+    public void setAvailable(boolean available) {
+        this.available = available;
+    }
 
 }

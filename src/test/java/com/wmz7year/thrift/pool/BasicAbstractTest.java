@@ -223,6 +223,28 @@ public abstract class BasicAbstractTest extends TestCase {
 		}
 		return result;
 	}
+	
+	/**
+     * 启动本地服务器的方法<br>
+     * 为了方便测试使用<br>
+     * 该服务是thrift超时调用的服务
+     * 
+     * @param count
+     *            启动的服务器数量
+     * @return 启动的服务器信息列表
+     */
+    protected List<ThriftServerInfo> startTimeoutServers(int count) throws Exception {
+        List<ThriftServerInfo> result = new ArrayList<ThriftServerInfo>();
+        for (int i = 0; i < count; i++) {
+            try {
+                ThriftServerInfo startServer = startTimeoutServer();
+                result.add(startServer);
+            } catch (Throwable e) {
+                continue;
+            }
+        }
+        return result;
+    }
 
 	/**
 	 * 启动多服务本地测试服务器的方法
@@ -292,6 +314,63 @@ public abstract class BasicAbstractTest extends TestCase {
 		Thread.sleep(1000);
 		return serverInfo;
 	}
+	
+	protected ThriftServerInfo startTimeoutServer() throws Throwable {
+        // 获取一个监听端口
+        final int port = choseListenPort();
+        ThriftServerInfo serverInfo = new ThriftServerInfo(LOACLHOST, port);
+        final AtomicReference<Throwable> ex = new AtomicReference<Throwable>();
+
+        Thread runner = new Thread("thrift-timeout-server-starter") {
+            @Override
+            public void run() {
+                try {
+                    TServerTransport serverTransport = new TServerSocket(port);
+                    Factory proFactory = new TBinaryProtocol.Factory();
+                    Processor<Iface> processor = new Example.Processor<Example.Iface>(new Example.Iface() {
+
+                        @Override
+                        public void pong() throws TException {
+                            try {
+                                Thread.sleep(3100);
+                            } catch (InterruptedException e) {
+                                // ignore
+                            }
+                        }
+
+                        @Override
+                        public void ping() throws TException {
+                            try {
+                                Thread.sleep(3100);
+                            } catch (InterruptedException e) {
+                                // ignore
+                            }
+                        }
+                    });
+                    Args thriftArgs = new Args(serverTransport);
+                    thriftArgs.processor(processor);
+                    thriftArgs.protocolFactory(proFactory);
+                    TServer tserver = new TThreadPoolServer(thriftArgs);
+                    servers.add(tserver);
+                    logger.info("启动测试服务监听：" + port);
+                    tserver.serve();
+                } catch (TTransportException e) {
+                    logger.error("thrift服务器启动失败", e);
+                    ex.set(e);
+                }
+            }
+        };
+
+        runner.start();
+
+        Throwable throwable = ex.get();
+        if (throwable != null) {
+            throw throwable;
+        }
+        // 等待服务器启动
+        Thread.sleep(1000);
+        return serverInfo;
+    }
 
 	protected ThriftServerInfo startMulitServiceServer() throws Throwable {
 		// 获取一个监听端口

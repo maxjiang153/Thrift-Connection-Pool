@@ -152,4 +152,12 @@ public class DefaultThriftConnection<T extends TServiceClient> implements Thrift
 		return !transport.isOpen();
 	}
 
+    /*
+     * @see com.wmz7year.thrift.pool.connection.ThriftConnection#setAvailable(boolean)
+     */
+    @Override
+    public void setAvailable(boolean available) {
+        throw new UnsupportedOperationException();
+    }
+
 }

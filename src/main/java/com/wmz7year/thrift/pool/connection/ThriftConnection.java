@@ -57,4 +57,16 @@ public interface ThriftConnection<T extends TServiceClient> extends Closeable {
 	 * @return true为连接已经关闭 false为连接未关闭
 	 */
 	public boolean isClosed();
+	
+	/**
+	 * 设置该链接的状态的方法<br>
+	 * 该状态默认为true 当连接状态设置为false时，该链接不会被连接池回收<br>
+	 * 典型的应用案例为当远端服务器处理请求缓慢超时时 thrift报超时异常<br>
+	 * 但是连接池本身并不知道连接已经存在问题<br>
+	 * 当这个问题连接被回收到连接池被再次获取时<br>
+	 * 则会报请求序号不一致的问题<br>
+	 * 
+	 * @param available 连接的状态
+	 */
+	public void setAvailable(boolean available);
 }
