@@ -84,7 +84,7 @@ public class TimeoutConnectionTest extends BasicAbstractTest {
         final ThriftConnectionPool<TServiceClient> pool =
             new ThriftConnectionPool<TServiceClient>(config);
 
-        final int threadCount = 10;
+        final int threadCount = 2;
         CountDownLatch countDown = new CountDownLatch(threadCount);
         for (int i = 0; i < threadCount; i++) {
             new Thread(new Runnable() {
